@@ -2,16 +2,27 @@ import { ArrowRight, BookCheck, Building2, Files, GraduationCap, LibraryBig } fr
 import { Link } from 'react-router-dom';
 
 import { VirtualLabShell } from '@/components/virtual-lab/VirtualLabShell';
-import { virtualLabAssignments, virtualLabCourses, virtualLabInstitution, virtualLabSubmissions } from '@/virtual-lab/mockData';
+import { useVirtualLabStore } from '@/store/useVirtualLabStore';
 
-const institutionStats = [
-  { label: 'Departments', value: virtualLabInstitution.departments, Icon: Building2 },
-  { label: 'Active Courses', value: virtualLabInstitution.activeCourses, Icon: LibraryBig },
-  { label: 'Students In Term', value: virtualLabInstitution.activeStudents, Icon: GraduationCap },
-  { label: 'Open Submissions', value: virtualLabSubmissions.filter((item) => item.status === 'submitted').length, Icon: Files },
-];
+function formatDueLabel(isoDate: string) {
+  const dueDate = new Date(isoDate);
+  return dueDate.toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
+}
 
 export default function VirtualLab() {
+  const institution = useVirtualLabStore((state) => state.institution);
+  const courses = useVirtualLabStore((state) => state.courses);
+  const assignments = useVirtualLabStore((state) => state.assignments);
+  const submissions = useVirtualLabStore((state) => state.submissions);
+  const status = useVirtualLabStore((state) => state.status);
+
+  const institutionStats = [
+    { label: 'Departments', value: institution?.departmentCount ?? '-', Icon: Building2 },
+    { label: 'Active Courses', value: institution?.activeCourseCount ?? '-', Icon: LibraryBig },
+    { label: 'Students In Term', value: institution?.activeStudentCount ?? '-', Icon: GraduationCap },
+    { label: 'Open Submissions', value: submissions.filter((item) => item.status === 'submitted').length, Icon: Files },
+  ];
+
   return (
     <VirtualLabShell>
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
@@ -35,6 +46,10 @@ export default function VirtualLab() {
               </div>
             ))}
           </div>
+
+          {status === 'loading' ? (
+            <p className="mt-4 text-sm text-zinc-500">Loading institution activity from the API...</p>
+          ) : null}
         </article>
 
         <article className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(34,211,238,0.12),rgba(255,255,255,0.03))] p-6">
@@ -63,19 +78,27 @@ export default function VirtualLab() {
               <h2 className="mt-3 font-display text-3xl text-zinc-50">Institution workspaces by course.</h2>
             </div>
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs uppercase tracking-[0.16em] text-zinc-300">
-              {virtualLabInstitution.currentTerm}
+              {institution?.currentTermLabel ?? 'Loading term'}
             </span>
           </div>
 
           <div className="mt-6 space-y-4">
-            {virtualLabCourses.map((course) => (
+            {courses.map((course) => {
+              const courseAssignments = assignments.filter((assignment) => assignment.courseId === course.id);
+              const courseBacklog = courseAssignments.reduce(
+                (total, assignment) =>
+                  total + submissions.filter((submission) => submission.assignmentId === assignment.id && submission.status === 'submitted').length,
+                0,
+              );
+
+              return (
               <div key={course.id} className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.16em] text-cyan-200">{course.code}</p>
                     <h3 className="mt-2 font-display text-2xl text-zinc-50">{course.title}</h3>
                     <p className="mt-2 text-sm leading-6 text-zinc-400">
-                      {course.instructor} . {course.schedule}
+                      {course.instructorName} . {course.schedule}
                     </p>
                   </div>
                   <div className="grid gap-3 text-sm text-zinc-300 sm:grid-cols-3">
@@ -85,11 +108,11 @@ export default function VirtualLab() {
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Assignments</p>
-                      <p className="mt-2 text-lg text-zinc-50">{course.publishedAssignments}</p>
+                      <p className="mt-2 text-lg text-zinc-50">{courseAssignments.length}</p>
                     </div>
                     <div>
                       <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">To Grade</p>
-                      <p className="mt-2 text-lg text-amber-200">{course.gradingBacklog}</p>
+                      <p className="mt-2 text-lg text-amber-200">{courseBacklog}</p>
                     </div>
                   </div>
                 </div>
@@ -103,7 +126,8 @@ export default function VirtualLab() {
                   </Link>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </article>
 
@@ -111,11 +135,11 @@ export default function VirtualLab() {
           <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Current Delivery State</p>
           <h2 className="mt-3 font-display text-3xl text-zinc-50">Assignments moving through one operational loop.</h2>
           <div className="mt-6 space-y-4">
-            {virtualLabAssignments.slice(0, 3).map((assignment) => (
+            {assignments.slice(0, 3).map((assignment) => (
               <div key={assignment.id} className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{assignment.dueLabel}</p>
+                    <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Due {formatDueLabel(assignment.dueAt)}</p>
                     <h3 className="mt-2 text-lg text-zinc-50">{assignment.title}</h3>
                   </div>
                   <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-100">
@@ -133,7 +157,9 @@ export default function VirtualLab() {
           <div className="mt-6 rounded-[24px] border border-emerald-300/20 bg-emerald-300/10 p-4">
             <div className="flex items-center gap-3">
               <BookCheck className="h-5 w-5 text-emerald-100" />
-              <p className="text-sm text-emerald-50">The skeleton already separates institution, staff, and student workflow concerns.</p>
+              <p className="text-sm text-emerald-50">
+                The module now reads from persisted Virtual Lab data instead of static page-only mock cards.
+              </p>
             </div>
           </div>
         </article>

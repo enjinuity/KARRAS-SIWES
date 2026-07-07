@@ -1,13 +1,78 @@
+import { useMemo, useState } from 'react';
 import { CalendarClock, Download, FileCode2, Users } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
 import { VirtualLabShell } from '@/components/virtual-lab/VirtualLabShell';
-import { getAssignmentsForCourse, getVirtualLabCourse } from '@/virtual-lab/mockData';
+import { useVirtualLabStore } from '@/store/useVirtualLabStore';
+
+function formatDueLabel(isoDate: string) {
+  return new Date(isoDate).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
+}
 
 export default function VirtualLabCourse() {
   const { courseId } = useParams();
-  const course = getVirtualLabCourse(courseId);
-  const assignments = getAssignmentsForCourse(course.id);
+  const courses = useVirtualLabStore((state) => state.courses);
+  const assignments = useVirtualLabStore((state) => state.assignments);
+  const createAssignment = useVirtualLabStore((state) => state.createAssignment);
+  const exportCourseGrades = useVirtualLabStore((state) => state.exportCourseGrades);
+
+  const course = useMemo(
+    () => courses.find((item) => item.id === courseId) ?? courses[0],
+    [courseId, courses],
+  );
+  const courseAssignments = assignments.filter((assignment) => assignment.courseId === course?.id);
+  const [title, setTitle] = useState('');
+  const [prompt, setPrompt] = useState('');
+  const [dueAt, setDueAt] = useState('');
+  const [formState, setFormState] = useState<string>('Drafting a new course assignment');
+
+  if (!course) {
+    return (
+      <VirtualLabShell>
+        <section className="rounded-[30px] border border-white/10 bg-zinc-950/70 p-6 text-sm text-zinc-300">
+          No course workspace is available yet.
+        </section>
+      </VirtualLabShell>
+    );
+  }
+
+  const handleCreateAssignment = async () => {
+    if (!title.trim() || !prompt.trim() || !dueAt) {
+      setFormState('Title, prompt, and due date are required.');
+      return;
+    }
+
+    try {
+      await createAssignment(course.id, {
+        title,
+        prompt,
+        dueAt: new Date(dueAt).toISOString(),
+        status: 'published',
+      });
+      setTitle('');
+      setPrompt('');
+      setDueAt('');
+      setFormState('Assignment published to the course workspace.');
+    } catch (error) {
+      setFormState(error instanceof Error ? error.message : 'Failed to publish assignment.');
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const result = await exportCourseGrades(course.id);
+      const blob = new Blob([result.content], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = result.fileName;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      setFormState('Grade export downloaded.');
+    } catch (error) {
+      setFormState(error instanceof Error ? error.message : 'Failed to export course grades.');
+    }
+  };
 
   return (
     <VirtualLabShell>
@@ -26,7 +91,7 @@ export default function VirtualLabCourse() {
                 <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Instructor</p>
                 <Users className="h-4 w-4 text-cyan-200" />
               </div>
-              <p className="mt-4 text-lg text-zinc-50">{course.instructor}</p>
+              <p className="mt-4 text-lg text-zinc-50">{course.instructorName}</p>
             </div>
             <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
               <div className="flex items-center justify-between">
@@ -62,6 +127,7 @@ export default function VirtualLabCourse() {
             </Link>
             <button
               type="button"
+              onClick={() => void handleExport()}
               className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.16em] text-zinc-200"
             >
               <Download className="h-4 w-4" />
@@ -79,16 +145,18 @@ export default function VirtualLabCourse() {
               <h2 className="mt-3 font-display text-3xl text-zinc-50">Published and draft practical tasks.</h2>
             </div>
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs uppercase tracking-[0.16em] text-zinc-300">
-              {assignments.length} items
+              {courseAssignments.length} items
             </span>
           </div>
 
           <div className="mt-6 space-y-4">
-            {assignments.map((assignment) => (
+            {courseAssignments.map((assignment) => (
               <div key={assignment.id} className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{assignment.dueLabel}</p>
+                    <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+                      Due {formatDueLabel(assignment.dueAt)}
+                    </p>
                     <h3 className="mt-2 font-display text-2xl text-zinc-50">{assignment.title}</h3>
                   </div>
                   <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-100">
@@ -119,6 +187,39 @@ export default function VirtualLabCourse() {
                 <p className="text-sm leading-6 text-zinc-300">{item}</p>
               </div>
             ))}
+          </div>
+
+          <div className="mt-6 rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Create Assignment</p>
+            <div className="mt-4 space-y-3">
+              <input
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="Assignment title"
+                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+              />
+              <textarea
+                value={prompt}
+                onChange={(event) => setPrompt(event.target.value)}
+                placeholder="Assignment prompt and instructions"
+                rows={5}
+                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+              />
+              <input
+                type="datetime-local"
+                value={dueAt}
+                onChange={(event) => setDueAt(event.target.value)}
+                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-zinc-100 outline-none"
+              />
+              <button
+                type="button"
+                onClick={() => void handleCreateAssignment()}
+                className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-3 text-xs uppercase tracking-[0.16em] text-cyan-100"
+              >
+                Publish Assignment
+              </button>
+            </div>
+            <p className="mt-4 text-sm text-zinc-500">{formState}</p>
           </div>
         </article>
       </section>

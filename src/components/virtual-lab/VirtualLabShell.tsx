@@ -1,9 +1,10 @@
 import type { PropsWithChildren } from 'react';
+import { useEffect } from 'react';
 import { BookMarked, Building2, FileSpreadsheet, GraduationCap, LayoutDashboard } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
 
 import { cn } from '@/lib/utils';
-import { virtualLabInstitution } from '@/virtual-lab/mockData';
+import { useVirtualLabStore } from '@/store/useVirtualLabStore';
 
 const labNavigation = [
   { to: '/virtual-lab', label: 'Dashboard', icon: LayoutDashboard },
@@ -13,6 +14,15 @@ const labNavigation = [
 ];
 
 export function VirtualLabShell({ children }: PropsWithChildren) {
+  const institution = useVirtualLabStore((state) => state.institution);
+  const status = useVirtualLabStore((state) => state.status);
+  const error = useVirtualLabStore((state) => state.error);
+  const ensureLoaded = useVirtualLabStore((state) => state.ensureLoaded);
+
+  useEffect(() => {
+    void ensureLoaded();
+  }, [ensureLoaded]);
+
   return (
     <div className="space-y-6">
       <section className="rounded-[32px] border border-white/10 bg-white/[0.03] p-6 shadow-[0_24px_120px_rgba(0,0,0,0.24)]">
@@ -33,11 +43,11 @@ export function VirtualLabShell({ children }: PropsWithChildren) {
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.22em] text-cyan-100/70">Institution Workspace</p>
-                <p className="mt-1 font-medium">{virtualLabInstitution.name}</p>
+                <p className="mt-1 font-medium">{institution?.name ?? 'Loading institution...'}</p>
               </div>
             </div>
             <p className="mt-4 text-xs uppercase tracking-[0.16em] text-cyan-100/70">
-              {virtualLabInstitution.currentTerm}
+              {institution?.currentTermLabel ?? 'Loading term'}
             </p>
           </div>
         </div>
@@ -68,6 +78,12 @@ export function VirtualLabShell({ children }: PropsWithChildren) {
           ))}
         </div>
       </section>
+
+      {status === 'error' ? (
+        <section className="rounded-[28px] border border-rose-300/20 bg-rose-300/10 p-5 text-sm text-rose-100">
+          {error ?? 'Virtual Lab data could not be loaded.'}
+        </section>
+      ) : null}
 
       {children}
     </div>

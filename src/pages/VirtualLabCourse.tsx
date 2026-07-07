@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CalendarClock, Download, FileCode2, Users } from 'lucide-react';
+import { CalendarClock, Download, Users } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 
 import { VirtualLabShell } from '@/components/virtual-lab/VirtualLabShell';
@@ -76,52 +76,53 @@ export default function VirtualLabCourse() {
 
   return (
     <VirtualLabShell>
-      <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <article className="rounded-[30px] border border-white/10 bg-zinc-950/70 p-6">
+      <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <article className="rounded-[28px] border border-white/10 bg-black/60 p-6">
           <p className="text-xs uppercase tracking-[0.22em] text-cyan-200">{course.code}</p>
           <h2 className="mt-3 font-display text-4xl text-zinc-50">{course.title}</h2>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-zinc-400">
-            This course workspace keeps assignments, roster context, and grading progress together so staff can run a
-            practical coding course from one operational surface.
-          </p>
-
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
+          <div className="mt-6 grid gap-px overflow-hidden rounded-[24px] border border-white/10 bg-white/10 sm:grid-cols-3">
+            <div className="bg-black/70 p-4">
               <div className="flex items-center justify-between">
                 <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Instructor</p>
-                <Users className="h-4 w-4 text-cyan-200" />
+                <Users className="h-4 w-4 text-zinc-400" />
               </div>
               <p className="mt-4 text-lg text-zinc-50">{course.instructorName}</p>
             </div>
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
+            <div className="bg-black/70 p-4">
               <div className="flex items-center justify-between">
                 <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Students</p>
-                <Users className="h-4 w-4 text-cyan-200" />
+                <Users className="h-4 w-4 text-zinc-400" />
               </div>
               <p className="mt-4 text-lg text-zinc-50">{course.studentCount}</p>
             </div>
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
+            <div className="bg-black/70 p-4">
               <div className="flex items-center justify-between">
                 <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Schedule</p>
-                <CalendarClock className="h-4 w-4 text-cyan-200" />
+                <CalendarClock className="h-4 w-4 text-zinc-400" />
               </div>
               <p className="mt-4 text-lg text-zinc-50">{course.schedule}</p>
             </div>
           </div>
         </article>
 
-        <article className="rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(34,211,238,0.12),rgba(255,255,255,0.03))] p-6">
+        <article className="rounded-[28px] border border-white/10 bg-black/60 p-6">
           <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Course Actions</p>
-          <h2 className="mt-3 font-display text-3xl text-zinc-50">Staff-side course management.</h2>
-          <div className="mt-6 space-y-3 text-sm leading-6 text-zinc-300">
-            <p>Create and publish practical assignments.</p>
-            <p>Track the live submission state of the course.</p>
-            <p>Export grades and outcomes once marking is complete.</p>
+          <h2 className="mt-3 font-display text-3xl text-zinc-50">Staff controls.</h2>
+          <div className="mt-6 grid gap-px overflow-hidden rounded-[22px] border border-white/10 bg-white/10">
+            {[
+              'Publish new coding tasks for this course.',
+              'Review assignment volume and queue state.',
+              'Export grades when marking is complete.',
+            ].map((item) => (
+              <div key={item} className="bg-black/70 p-4 text-sm leading-7 text-zinc-300">
+                {item}
+              </div>
+            ))}
           </div>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               to="/virtual-lab/grading"
-              className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-xs uppercase tracking-[0.16em] text-cyan-100"
+              className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white px-4 py-2 text-xs uppercase tracking-[0.16em] text-black"
             >
               Open Grading
             </Link>
@@ -137,90 +138,80 @@ export default function VirtualLabCourse() {
         </article>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <article className="rounded-[30px] border border-white/10 bg-zinc-950/70 p-6">
+      <section className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr]">
+        <article className="rounded-[28px] border border-white/10 bg-black/60 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Assignment Builder</p>
-              <h2 className="mt-3 font-display text-3xl text-zinc-50">Published and draft practical tasks.</h2>
+              <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Assignments</p>
+              <h2 className="mt-3 font-display text-3xl text-zinc-50">Course queue.</h2>
             </div>
             <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-2 text-xs uppercase tracking-[0.16em] text-zinc-300">
               {courseAssignments.length} items
             </span>
           </div>
 
-          <div className="mt-6 space-y-4">
+          <div className="mt-6 overflow-hidden rounded-[24px] border border-white/10">
+            <div className="hidden grid-cols-[1.2fr_0.75fr_0.65fr] gap-4 border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs uppercase tracking-[0.16em] text-zinc-500 lg:grid">
+              <p>Assignment</p>
+              <p>Status</p>
+              <p>Submissions</p>
+            </div>
             {courseAssignments.map((assignment) => (
-              <div key={assignment.id} className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
-                <div className="flex items-start justify-between gap-4">
+              <div key={assignment.id} className="border-t border-white/10 bg-black/50 px-4 py-4 first:border-t-0">
+                <div className="grid gap-4 lg:grid-cols-[1.2fr_0.75fr_0.65fr] lg:items-start">
                   <div>
                     <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
                       Due {formatDueLabel(assignment.dueAt)}
                     </p>
-                    <h3 className="mt-2 font-display text-2xl text-zinc-50">{assignment.title}</h3>
+                    <h3 className="mt-2 text-base text-zinc-50">{assignment.title}</h3>
+                    <p className="mt-3 text-sm leading-7 text-zinc-400">{assignment.prompt}</p>
                   </div>
-                  <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-100">
-                    {assignment.status}
-                  </span>
+                  <div>
+                    <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-zinc-300">
+                      {assignment.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-zinc-200">{assignment.submissionCount}</p>
                 </div>
-                <p className="mt-3 text-sm leading-7 text-zinc-400">{assignment.prompt}</p>
-                <p className="mt-4 text-xs uppercase tracking-[0.16em] text-zinc-500">
-                  {assignment.submissionCount} submissions in the current term
-                </p>
               </div>
             ))}
           </div>
         </article>
 
-        <article className="rounded-[30px] border border-white/10 bg-zinc-950/70 p-6">
-          <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Builder Direction</p>
-          <h2 className="mt-3 font-display text-3xl text-zinc-50">Assignment creation should feel academic, not generic.</h2>
-          <div className="mt-6 space-y-4">
-            {[
-              'Course-scoped assignment prompt with rich instructions',
-              'Deadline and publishing state management',
-              'Submission mode controls for phone or laptop learners',
-              'Clear grading expectations for staff review',
-            ].map((item) => (
-              <div key={item} className="flex gap-3 rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
-                <FileCode2 className="mt-1 h-4 w-4 shrink-0 text-cyan-200" />
-                <p className="text-sm leading-6 text-zinc-300">{item}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
-            <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Create Assignment</p>
-            <div className="mt-4 space-y-3">
+        <article className="rounded-[28px] border border-white/10 bg-black/60 p-6">
+          <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Create Assignment</p>
+          <h2 className="mt-3 font-display text-3xl text-zinc-50">New task.</h2>
+          <div className="mt-6 space-y-3">
               <input
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Assignment title"
-                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+                className="w-full rounded-[20px] border border-white/10 bg-black/30 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
               />
               <textarea
                 value={prompt}
                 onChange={(event) => setPrompt(event.target.value)}
                 placeholder="Assignment prompt and instructions"
                 rows={5}
-                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+                className="w-full rounded-[20px] border border-white/10 bg-black/30 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
               />
               <input
                 type="datetime-local"
                 value={dueAt}
                 onChange={(event) => setDueAt(event.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-zinc-100 outline-none"
+                className="w-full rounded-[20px] border border-white/10 bg-black/30 px-4 py-3 text-sm text-zinc-100 outline-none"
               />
-              <button
-                type="button"
-                onClick={() => void handleCreateAssignment()}
-                className="rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-3 text-xs uppercase tracking-[0.16em] text-cyan-100"
-              >
-                Publish Assignment
-              </button>
-            </div>
-            <p className="mt-4 text-sm text-zinc-500">{formState}</p>
           </div>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => void handleCreateAssignment()}
+              className="rounded-full border border-white/12 bg-white px-4 py-3 text-xs uppercase tracking-[0.16em] text-black"
+            >
+              Publish Assignment
+            </button>
+          </div>
+          <p className="mt-4 text-sm text-zinc-500">{formState}</p>
         </article>
       </section>
     </VirtualLabShell>

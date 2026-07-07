@@ -1,4 +1,5 @@
 ## 1. Architecture Design
+
 ```mermaid
 flowchart LR
     A["React Frontend"] --> B["Application State Layer"]
@@ -18,34 +19,46 @@ flowchart LR
 ```
 
 ## 2. Technology Description
-- Frontend: React@18 + TypeScript + Vite + Tailwind CSS v3
-- Backend: Express + TypeScript running in the `api` directory
-- State Management: Zustand for shared UI state, bridge scenario state, and future virtual lab workflow state
-- Visualization: SVG-first rendering for the bridge workspace and responsive dashboard surfaces for Virtual Lab
-- Motion: Framer Motion for panel transitions, metric animations, and comparison interactions
-- Persistence: browser localStorage for bridge scenario persistence and lightweight client cache where appropriate
-- Persistent Storage: SQLite-backed backend storage for authenticated bridge and virtual lab data
-- Testing: Vitest + React Testing Library for simulation rules and critical UI workflows
-- Initialization Tool: Vite
+
+* Frontend: React\@18 + TypeScript + Vite + Tailwind CSS v3
+
+* Backend: Express + TypeScript running in the `api` directory
+
+* State Management: Zustand for shared UI state, bridge scenario state, and future virtual lab workflow state
+
+* Visualization: SVG-first rendering for the bridge workspace and responsive dashboard surfaces for Virtual Lab
+
+* Motion: Framer Motion for panel transitions, metric animations, and comparison interactions
+
+* Persistence: browser localStorage for bridge scenario persistence and lightweight client cache where appropriate
+
+* Persistent Storage: SQLite-backed backend storage for authenticated bridge and virtual lab data
+
+* Testing: Vitest + React Testing Library for simulation rules and critical UI workflows
+
+* Initialization Tool: Vite
 
 ## 3. Route Definitions
-| Route | Purpose |
-|-------|---------|
-| / | Module launcher and platform home |
-| /workspace | Bridge simulation workspace with real-time input and visual feedback |
-| /reports | Bridge reporting surface |
-| /compare | Compare saved bridge scenarios across multiple metrics |
-| /virtual-lab | Virtual Lab institution dashboard |
-| /virtual-lab/course/:courseId | Course workspace with assignments and roster context |
-| /virtual-lab/student | Student assignment and coding workspace |
-| /virtual-lab/grading | Staff grading console |
-| /methodology | Explain module types, assumptions, scoring rules, and MVP boundaries |
-| /auth | Register and sign in to enable persistent scenario storage |
+
+| Route                         | Purpose                                                              |
+| ----------------------------- | -------------------------------------------------------------------- |
+| /                             | Module launcher and platform home                                    |
+| /workspace                    | Bridge simulation workspace with real-time input and visual feedback |
+| /reports                      | Bridge reporting surface                                             |
+| /compare                      | Compare saved bridge scenarios across multiple metrics               |
+| /virtual-lab                  | Virtual Lab institution dashboard                                    |
+| /virtual-lab/course/:courseId | Course workspace with assignments and roster context                 |
+| /virtual-lab/student          | Student assignment and coding workspace                              |
+| /virtual-lab/grading          | Staff grading console                                                |
+| /methodology                  | Explain module types, assumptions, scoring rules, and MVP boundaries |
+| /auth                         | Register and sign in to enable persistent scenario storage           |
 
 ## 4. API Definitions
+
 The expanded MVP keeps bridge simulation logic client-side for responsiveness while introducing a lightweight backend for account access, persistent scenario storage, and the Virtual Lab workflow domain.
 
 ### Type Definitions
+
 ```ts
 type ScenarioInput = {
   id: string;
@@ -135,6 +148,7 @@ type AuthResponse = {
 ```
 
 ### Endpoints
+
 ```ts
 POST /api/auth/register
 POST /api/auth/login
@@ -156,6 +170,7 @@ GET /api/courses/:id/export
 ```
 
 ## 5. Server Architecture Diagram
+
 ```mermaid
 flowchart TD
     A["Auth Routes"] --> B["Auth Service"]
@@ -169,7 +184,9 @@ flowchart TD
 ```
 
 ## 6. Data Model
+
 ### 6.1 Data Model Definition
+
 ```mermaid
 erDiagram
     SCENARIO {
@@ -257,6 +274,7 @@ erDiagram
 ```
 
 ### 6.2 Data Definition Language
+
 The frontend keeps a local cache while the backend stores authenticated accounts, bridge scenarios, and virtual lab workflow data in SQLite:
 
 ```ts
@@ -279,8 +297,14 @@ type VirtualLabStore = {
 ```
 
 ## 7. Implementation Notes
-- Use a domain-first folder structure with `simulation`, `virtual-lab`, `comparison`, `reporting`, and `methodology` modules separated from shared UI primitives.
-- Keep the bridge simulation engine deterministic and explainable. Use weighted rules, thresholds, and explicit screening checks instead of opaque AI logic in the MVP.
-- Keep Virtual Lab as a distinct workflow domain rather than forcing its data model into the bridge scenario schema.
-- Separate bridge `input normalization`, `derived metric calculation`, `screening logic`, and `recommendation generation` into pure functions so the engine remains testable and portable.
-- Build the bridge workspace as a premium desktop planning cockpit and the Virtual Lab student experience as a strongly mobile-first workflow surface.
+
+* Use a domain-first folder structure with `simulation`, `virtual-lab`, `comparison`, `reporting`, and `methodology` modules separated from shared UI primitives.
+
+* Keep the bridge simulation engine deterministic and explainable. Use weighted rules, thresholds, and explicit screening checks instead of opaque AI logic in the MVP.
+
+* Keep Virtual Lab as a distinct workflow domain rather than forcing its data model into the bridge scenario schema.
+
+* Separate bridge `input normalization`, `derived metric calculation`, `screening logic`, and `recommendation generation` into pure functions so the engine remains testable and portable.
+
+* Build the bridge workspace as a premium desktop planning cockpit and the Virtual Lab student experience as a strongly mobile-first workflow surface.
+

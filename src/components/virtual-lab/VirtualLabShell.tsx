@@ -25,50 +25,55 @@ export function VirtualLabShell({ children }: PropsWithChildren) {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[32px] border border-white/10 bg-white/[0.03] p-6 shadow-[0_24px_120px_rgba(0,0,0,0.24)]">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.3em] text-cyan-300/80">Operational Module</p>
-            <h1 className="mt-4 font-display text-4xl leading-[0.95] text-zinc-50 xl:text-6xl">KARRAS Virtual Lab</h1>
-            <p className="mt-5 text-sm leading-7 text-zinc-400">
-              A mobile-first practical coding delivery system for institutions that need assignments, submission
-              handling, grading, and academic export without relying on a working physical computer lab.
-            </p>
-          </div>
-
-          <div className="rounded-[28px] border border-cyan-300/20 bg-cyan-300/10 p-5 text-sm text-cyan-50 lg:max-w-sm">
+      <section className="rounded-[30px] border border-white/10 bg-black/65 p-5">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+          <div className="min-w-0">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-cyan-300/30 bg-black/20">
-                <Building2 className="h-5 w-5" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-[18px] border border-white/10 bg-white/[0.03]">
+                <Building2 className="h-4 w-4 text-zinc-200" />
               </div>
-              <div>
-                <p className="text-xs uppercase tracking-[0.22em] text-cyan-100/70">Institution Workspace</p>
-                <p className="mt-1 font-medium">{institution?.name ?? 'Loading institution...'}</p>
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-[0.24em] text-zinc-600">Virtual Lab</p>
+                <h1 className="mt-1 font-display text-3xl text-zinc-50">
+                  {institution?.shortName ?? 'Institution'}
+                </h1>
               </div>
             </div>
-            <p className="mt-4 text-xs uppercase tracking-[0.16em] text-cyan-100/70">
-              {institution?.currentTermLabel ?? 'Loading term'}
-            </p>
+            <div className="mt-4 flex flex-wrap gap-4 text-xs uppercase tracking-[0.16em] text-zinc-500">
+              <span>{institution?.name ?? 'Institution'}</span>
+              <span>{institution?.currentTermLabel ?? 'Loading term'}</span>
+              <span>{status === 'loading' ? 'Loading' : 'Ready'}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              to="/workspace"
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs uppercase tracking-[0.18em] text-zinc-300"
+            >
+              Workspace
+            </Link>
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs uppercase tracking-[0.18em] text-zinc-300"
+            >
+              Home
+            </Link>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs uppercase tracking-[0.18em] text-zinc-200"
-          >
-            Back To Modules
-          </Link>
+        <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-white/8 pt-5">
           {labNavigation.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
+              end={to === '/virtual-lab'}
               className={({ isActive }) =>
                 cn(
                   'inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs uppercase tracking-[0.18em] transition',
                   isActive
-                    ? 'border-cyan-300/30 bg-cyan-300/10 text-cyan-100'
-                    : 'border-white/10 bg-white/[0.04] text-zinc-300 hover:text-zinc-100',
+                    ? 'border-white/14 bg-white/10 text-zinc-100'
+                    : 'border-white/10 bg-white/[0.02] text-zinc-500 hover:text-zinc-100',
                 )
               }
             >
@@ -80,12 +85,19 @@ export function VirtualLabShell({ children }: PropsWithChildren) {
       </section>
 
       {status === 'error' ? (
-        <section className="rounded-[28px] border border-rose-300/20 bg-rose-300/10 p-5 text-sm text-rose-100">
+        <section className="rounded-[24px] border border-rose-300/20 bg-rose-300/10 p-5 text-sm text-rose-100">
           {error ?? 'Virtual Lab data could not be loaded.'}
         </section>
       ) : null}
 
-      {children}
+      {status !== 'ready' && !error ? (
+        <section className="rounded-[28px] border border-white/10 bg-black/60 p-6">
+          <p className="text-xs uppercase tracking-[0.18em] text-zinc-600">Loading</p>
+          <h2 className="mt-3 font-display text-3xl text-zinc-50">Virtual Lab</h2>
+        </section>
+      ) : (
+        children
+      )}
     </div>
   );
 }

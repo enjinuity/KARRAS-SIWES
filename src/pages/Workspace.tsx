@@ -52,7 +52,7 @@ type WorkspaceCategory = {
 const blankBridgeStudy = {
   label: 'Blank Canvas',
   description: 'Start from a neutral bridge study and define the crossing yourself.',
-  defaultName: 'Untitled Bridge Study',
+  defaultName: 'Untitled Study',
   patch: {
     studyState: 'blank-canvas' as const,
     dataOrigin: 'manual-estimate' as const,
@@ -94,7 +94,7 @@ const moduleCategories: WorkspaceCategory[] = [
     modules: [
       {
         id: 'bridge-corridor',
-        label: 'Bridge Corridor Study',
+        label: 'Crossing Feasibility Study',
         status: 'available' as const,
         description: 'Plan a bridge crossing over water with presets for hydraulic, navigation, and support conditions.',
       },
@@ -172,7 +172,7 @@ export default function Workspace() {
     () =>
       surface === 'study' && scenario
         ? [
-            ['Module', 'Bridge Corridor Study'],
+            ['Module', 'Crossing feasibility study'],
             ['Active preset', `${formatLabel(scenario.waterwayType)} crossing with ${scenario.channelWidthM}m channel width and ${scenario.navigationClearanceM}m clearance.`],
             ['Scenario workflow', `${activeComparisonCount} scenario${activeComparisonCount === 1 ? '' : 's'} currently in the comparison set.`],
           ]
@@ -339,7 +339,7 @@ export default function Workspace() {
   const renderEmptyApplet = (title: string, description: string) => (
     <section className="space-y-4 rounded-[28px] border border-white/10 bg-zinc-950/92 p-5 shadow-[0_18px_80px_rgba(0,0,0,0.44)]">
       <div>
-        <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Workspace Applet</p>
+        <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Workspace</p>
         <h2 className="mt-2 font-display text-2xl text-zinc-50">{title}</h2>
       </div>
       <p className="text-sm leading-7 text-zinc-400">{description}</p>
@@ -359,11 +359,8 @@ export default function Workspace() {
       return (
         <section className="space-y-5 rounded-[28px] border border-white/10 bg-zinc-950/94 p-5 shadow-[0_18px_80px_rgba(0,0,0,0.44)]">
           <div>
-            <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Workspace Modules</p>
-            <h2 className="mt-2 font-display text-2xl text-zinc-50">Start a new study</h2>
-            <p className="mt-3 text-sm leading-7 text-zinc-400">
-              The workspace is product-level, not bridge-only. This release ships the bridge corridor study first.
-            </p>
+            <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Modules</p>
+            <h2 className="mt-2 font-display text-2xl text-zinc-50">New study</h2>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -385,7 +382,7 @@ export default function Workspace() {
 
           {!activeCategory ? (
             <div className="rounded-[24px] border border-dashed border-white/10 bg-white/[0.02] p-5 text-sm leading-7 text-zinc-400">
-              Select a category first. The module setup and preset builder appear only after that choice is made.
+              Select a category.
             </div>
           ) : (
             <>
@@ -415,7 +412,7 @@ export default function Workspace() {
               <div className="space-y-3 rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
                 <div>
                   <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Study Setup</p>
-                  <h3 className="mt-2 font-display text-2xl text-zinc-50">Bridge corridor builder</h3>
+                  <h3 className="mt-2 font-display text-2xl text-zinc-50">Study builder</h3>
                 </div>
 
                 <button
@@ -473,7 +470,7 @@ export default function Workspace() {
                   className="inline-flex items-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-xs uppercase tracking-[0.18em] text-cyan-100"
                 >
                   <Plus className="h-4 w-4" />
-                  Start From Preset
+                  Launch Study
                 </button>
 
                 <label className="block rounded-[22px] border border-dashed border-white/10 bg-zinc-950/40 p-4">
@@ -505,7 +502,7 @@ export default function Workspace() {
           </div>
 
           {scenarios.length === 0 ? (
-            <p className="text-sm leading-7 text-zinc-400">No saved studies yet. Start from the module applet to build the first simulation.</p>
+            <p className="text-sm leading-7 text-zinc-400">No saved studies.</p>
           ) : (
             <div className="max-h-[70vh] space-y-3 overflow-y-auto pr-1">
               {scenarios.map((item) => {
@@ -623,7 +620,7 @@ export default function Workspace() {
           onCreateVariant={createScenarioFromCurrent}
         />
       ) : (
-        renderEmptyApplet('No active study', 'Launch a module preset or open a saved study from the library before tuning controls.')
+        renderEmptyApplet('No active study', 'Open or launch a study.')
       );
     }
 
@@ -631,22 +628,19 @@ export default function Workspace() {
       return scenario?.studyState === 'blank-canvas'
         ? renderEmptyApplet(
             'Analysis unavailable',
-            'This study is still blank. Define waterway geometry and structural assumptions first, then open analysis once the crossing has been formed.',
+            'Complete the study first.',
           )
         : result
           ? <DecisionPanel result={result} />
-          : renderEmptyApplet('No active analysis', 'The decision applet becomes available once a study has been started or opened.');
+          : renderEmptyApplet('No active analysis', 'Open a study.');
     }
 
     if (activeApplet === 'cloud') {
       return (
         <section className="space-y-5 rounded-[28px] border border-white/10 bg-zinc-950/94 p-5 shadow-[0_18px_80px_rgba(0,0,0,0.44)]">
           <div>
-            <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Workspace Services</p>
+            <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Services</p>
             <h2 className="mt-2 font-display text-2xl text-zinc-50">Cloud and review</h2>
-            <p className="mt-3 text-sm leading-7 text-zinc-400">
-              Keep sync, reports, and comparison outside the central work surface until you need them.
-            </p>
           </div>
 
           <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
@@ -693,9 +687,6 @@ export default function Workspace() {
 
           <label className="block rounded-[22px] border border-dashed border-white/10 bg-white/[0.03] p-4">
             <span className="mb-2 block text-xs uppercase tracking-[0.18em] text-zinc-500">Import Study Data</span>
-            <span className="block text-sm leading-6 text-zinc-400">
-              Replace presets with your own JSON, CSV, or GeoJSON package when you have real corridor data.
-            </span>
             <input
               type="file"
               accept=".json,.csv,.geojson"
@@ -728,7 +719,7 @@ export default function Workspace() {
         </Link>
         <div className="hidden rounded-2xl border border-white/10 bg-[#081121]/88 px-4 py-3 backdrop-blur-xl lg:block">
           <p className="font-display text-sm uppercase tracking-[0.34em] text-zinc-50">KARRAS</p>
-          <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-zinc-500">Workspace Surface</p>
+          <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-zinc-500">Workspace</p>
         </div>
       </div>
 
@@ -792,170 +783,193 @@ export default function Workspace() {
 
       <main className="relative z-10 px-[4.75rem] pb-6 pt-32 sm:px-24 sm:pt-36 lg:px-32 lg:pt-32 xl:px-40">
         {surface === 'launcher' ? (
-          <section className="mx-auto grid min-h-[calc(100dvh-9rem)] max-w-[1280px] place-items-center">
-            <div className="grid w-full gap-6 xl:grid-cols-[minmax(0,1.1fr)_400px]">
-              <div className="rounded-[36px] border border-white/10 bg-[linear-gradient(180deg,rgba(8,17,33,0.94),rgba(5,9,22,0.94))] p-8 shadow-[0_24px_100px_rgba(0,0,0,0.34)]">
-                <p className="text-xs uppercase tracking-[0.3em] text-cyan-300/80">Workspace Launcher</p>
-                <h1 className="mt-6 max-w-4xl font-display text-5xl leading-[0.94] text-zinc-50 xl:text-7xl">
-                  Build the simulation before you enter it.
-                </h1>
-                <p className="mt-6 max-w-3xl text-base leading-8 text-zinc-400">
-                  KARRAS ships the bridge corridor study first, but this workspace is the operating surface for multiple simulation modules. Pick the category, choose a preset, and launch the study you want to work on.
-                </p>
+          <section className="mx-auto max-w-[1480px]">
+            <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
+              <div className="space-y-6 rounded-[28px] border border-white/10 bg-[#070707]/92 p-6 shadow-[0_24px_100px_rgba(0,0,0,0.3)]">
+                <div className="flex items-center justify-between gap-4 border-b border-white/8 pb-5">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.24em] text-zinc-600">Workspace</p>
+                    <h1 className="mt-3 font-display text-4xl text-zinc-50">Studies</h1>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveApplet('library')}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs uppercase tracking-[0.16em] text-zinc-300"
+                  >
+                    <FolderOpen className="h-4 w-4" />
+                    Library
+                  </button>
+                </div>
 
-                <div className="mt-8 grid gap-4 md:grid-cols-3">
-                  {moduleCategories.map((category) => (
-                    <button
-                      key={category.id}
-                      type="button"
-                      onClick={() => setSelectedCategory(category.id)}
-                      className={`rounded-[28px] border p-5 text-left transition ${
-                        selectedCategory === category.id
-                          ? 'border-cyan-300/40 bg-cyan-300/10 text-cyan-100'
-                          : 'border-white/10 bg-white/[0.03] text-zinc-400 hover:text-zinc-100'
-                      }`}
-                    >
-                      <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Simulation Category</p>
-                      <h2 className="mt-3 font-display text-2xl text-zinc-50">{category.label}</h2>
-                      <p className="mt-3 text-sm leading-6 text-zinc-400">{category.description}</p>
-                    </button>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Categories</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {moduleCategories.map((category) => (
+                      <button
+                        key={category.id}
+                        type="button"
+                        onClick={() => setSelectedCategory(category.id)}
+                        className={`rounded-full border px-4 py-2 text-xs uppercase tracking-[0.18em] transition ${
+                          selectedCategory === category.id
+                            ? 'border-white/14 bg-white/10 text-zinc-100'
+                            : 'border-white/10 bg-white/[0.03] text-zinc-500 hover:text-zinc-100'
+                        }`}
+                      >
+                        {category.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="overflow-hidden rounded-[24px] border border-white/10">
+                  <div className="grid grid-cols-[1.2fr_0.7fr] border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs uppercase tracking-[0.16em] text-zinc-500">
+                    <p>Module</p>
+                    <p>Status</p>
+                  </div>
+                  {(activeCategory?.modules ?? []).map((module) => (
+                    <div key={module.id} className="grid grid-cols-[1.2fr_0.7fr] gap-4 border-t border-white/10 bg-black/40 px-4 py-4 first:border-t-0">
+                      <div>
+                        <p className="text-sm text-zinc-100">{module.label}</p>
+                        <p className="mt-2 text-xs uppercase tracking-[0.14em] text-zinc-500">{module.description}</p>
+                      </div>
+                      <div className="flex items-start">
+                        <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-zinc-300">
+                          {module.status === 'available' ? 'Available' : 'Queued'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  {!activeCategory ? (
+                    <div className="px-4 py-8 text-sm text-zinc-500">Select a category.</div>
+                  ) : null}
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {workspaceInsights.map(([title, description]) => (
+                    <div key={title} className="rounded-[20px] border border-white/10 bg-white/[0.03] p-4">
+                      <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{title}</p>
+                      <p className="mt-3 text-sm leading-6 text-zinc-300">{description}</p>
+                    </div>
                   ))}
                 </div>
 
-                {activeCategory ? (
-                  <div className="mt-8 grid gap-4 lg:grid-cols-2">
-                    {activeCategory.modules.map((module) => (
-                      <article
-                        key={module.id}
-                        className={`rounded-[28px] border p-5 ${
-                          module.status === 'available'
-                            ? 'border-cyan-300/25 bg-cyan-300/10'
-                            : 'border-white/10 bg-white/[0.03]'
-                        }`}
-                      >
-                        <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">
-                          {module.status === 'available' ? 'Shipping Now' : 'Future Module'}
-                        </p>
-                        <h2 className="mt-3 font-display text-3xl text-zinc-50">{module.label}</h2>
-                        <p className="mt-3 text-sm leading-7 text-zinc-400">{module.description}</p>
-                      </article>
-                    ))}
+                <div className="overflow-hidden rounded-[24px] border border-white/10">
+                  <div className="grid grid-cols-[1.1fr_0.7fr_0.7fr] border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs uppercase tracking-[0.16em] text-zinc-500">
+                    <p>Recent</p>
+                    <p>Status</p>
+                    <p>Action</p>
                   </div>
-                ) : (
-                  <div className="mt-8 rounded-[28px] border border-dashed border-white/10 bg-white/[0.02] p-6">
-                    <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Next Step</p>
-                    <h2 className="mt-3 font-display text-3xl text-zinc-50">Select a category first.</h2>
-                    <p className="mt-3 max-w-2xl text-sm leading-7 text-zinc-400">
-                      The study setup stays hidden until you choose which simulation area you want to work in.
-                    </p>
-                  </div>
-                )}
+                  {scenarios.slice(0, 4).map((item) => {
+                    const itemResult = resultsByScenarioId[item.id];
+                    return (
+                      <div key={item.id} className="grid grid-cols-[1.1fr_0.7fr_0.7fr] gap-4 border-t border-white/10 bg-black/40 px-4 py-4 first:border-t-0">
+                        <div>
+                          <p className="text-sm text-zinc-100">{item.name}</p>
+                          <p className="mt-2 text-xs uppercase tracking-[0.14em] text-zinc-500">{formatLabel(item.waterwayType)}</p>
+                        </div>
+                        <p className="text-sm text-zinc-300">{itemResult ? formatStatus(itemResult.status) : 'Draft'}</p>
+                        <button
+                          type="button"
+                          onClick={() => openScenario(item.id)}
+                          className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-2 text-xs uppercase tracking-[0.16em] text-zinc-200"
+                        >
+                          Open
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {scenarios.length === 0 ? (
+                    <div className="px-4 py-8 text-sm text-zinc-500">No saved studies.</div>
+                  ) : null}
+                </div>
               </div>
 
-              {activeCategory ? (
-                <div className="space-y-4 rounded-[36px] border border-white/10 bg-zinc-950/84 p-6 shadow-[0_24px_100px_rgba(0,0,0,0.34)] backdrop-blur-xl">
+              <div className="rounded-[28px] border border-white/10 bg-[#070707]/92 p-6 shadow-[0_24px_100px_rgba(0,0,0,0.3)]">
+                <div className="flex items-center justify-between gap-4 border-b border-white/8 pb-5">
                   <div>
-                    <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Study Builder</p>
-                    <h2 className="mt-3 font-display text-3xl text-zinc-50">Bridge corridor study</h2>
+                    <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">New Study</p>
+                    <h2 className="mt-3 font-display text-4xl text-zinc-50">
+                      {activeCategory ? activeCategory.modules[0]?.label ?? 'Study' : 'Builder'}
+                    </h2>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={handleLaunchBlankStudy}
-                    className="w-full rounded-[24px] border border-white/10 bg-white/[0.03] p-4 text-left transition hover:border-white/20"
-                  >
-                    <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Clean Start</p>
-                    <h3 className="mt-2 font-display text-2xl text-zinc-50">{blankBridgeStudy.label}</h3>
-                    <p className="mt-2 text-sm leading-6 text-zinc-400">{blankBridgeStudy.description}</p>
-                  </button>
-
-                  <div className="space-y-3">
-                    {bridgeStudyPresets.map((preset) => {
-                      const active = preset.id === selectedPresetId;
-                      return (
-                        <button
-                          key={preset.id}
-                          type="button"
-                          onClick={() => setSelectedPresetId(preset.id)}
-                          className={`w-full rounded-[24px] border p-4 text-left transition ${
-                            active
-                              ? 'border-cyan-300/40 bg-cyan-300/10'
-                              : 'border-white/10 bg-white/[0.03] hover:border-white/20'
-                          }`}
-                        >
-                          <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">
-                            {formatLabel(preset.patch.waterwayType ?? 'river')}
-                          </p>
-                          <h3 className="mt-2 font-display text-2xl text-zinc-50">{preset.label}</h3>
-                          <p className="mt-2 text-sm leading-6 text-zinc-400">{preset.description}</p>
-                          <p className="mt-3 text-xs leading-5 text-zinc-500">{preset.patch.sourceSummary}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <label className="block">
-                    <span className="mb-2 block text-xs uppercase tracking-[0.18em] text-zinc-500">Study Name</span>
-                    <input
-                      value={studyName}
-                      onChange={(event) => setStudyName(event.target.value)}
-                      className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-zinc-100 outline-none transition focus:border-cyan-300/50"
-                      placeholder="Name this study"
-                    />
-                  </label>
-
-                  <button
-                    type="button"
-                    onClick={handleLaunchPreset}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-cyan-300/30 bg-cyan-300/10 px-4 py-3 text-xs uppercase tracking-[0.18em] text-cyan-100"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Launch Preset Study
-                  </button>
-
-                  <label className="block rounded-[24px] border border-dashed border-white/10 bg-white/[0.02] p-4">
-                    <span className="mb-2 block text-xs uppercase tracking-[0.18em] text-zinc-500">Import User Data</span>
-                    <span className="block text-sm leading-6 text-zinc-400">
-                      Start from your own JSON, CSV, or GeoJSON package instead of using a preset.
-                    </span>
-                    <input
-                      type="file"
-                      accept=".json,.csv,.geojson"
-                      onChange={(event) => void handleImportFile(event)}
-                      className="mt-4 block w-full text-sm text-zinc-300 file:mr-4 file:rounded-full file:border-0 file:bg-cyan-300/10 file:px-4 file:py-2 file:text-xs file:font-semibold file:uppercase file:tracking-[0.18em] file:text-cyan-100"
-                    />
-                    <p className="mt-3 text-xs leading-5 text-zinc-500">{importState}</p>
-                  </label>
-
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    {workspaceInsights.map(([title, description]) => (
-                      <div key={title} className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
-                        <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">{title}</p>
-                        <p className="mt-3 text-sm leading-6 text-zinc-300">{description}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {scenarios.length > 0 ? (
+                  {activeCategory ? (
                     <button
                       type="button"
-                      onClick={() => setActiveApplet('library')}
-                      className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-zinc-400 transition hover:text-zinc-100"
+                      onClick={handleLaunchBlankStudy}
+                      className="rounded-full border border-white/12 bg-white px-4 py-2 text-xs uppercase tracking-[0.16em] text-black"
                     >
-                      <FolderOpen className="h-4 w-4" />
-                      Open saved study
+                      Blank
                     </button>
                   ) : null}
                 </div>
-              ) : (
-                <div className="rounded-[36px] border border-dashed border-white/10 bg-zinc-950/60 p-6 shadow-[0_24px_100px_rgba(0,0,0,0.2)] backdrop-blur-xl">
-                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Study Builder</p>
-                  <h2 className="mt-3 font-display text-3xl text-zinc-50">Waiting for category selection.</h2>
-                  <p className="mt-3 text-sm leading-7 text-zinc-400">
-                    Choose a simulation category first. After that, you can either start from a preset or open a blank canvas for the bridge module shipping now.
-                  </p>
-                </div>
-              )}
+
+                {!activeCategory ? (
+                  <div className="grid min-h-[520px] place-items-center text-sm text-zinc-500">Select a category.</div>
+                ) : (
+                  <div className="space-y-5 pt-6">
+                    <div className="space-y-3">
+                      {bridgeStudyPresets.map((preset) => {
+                        const active = preset.id === selectedPresetId;
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => setSelectedPresetId(preset.id)}
+                            className={`w-full rounded-[22px] border p-4 text-left transition ${
+                              active
+                                ? 'border-white/14 bg-white/[0.08]'
+                                : 'border-white/10 bg-white/[0.03] hover:border-white/20'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-4">
+                              <div>
+                                <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">
+                                  {formatLabel(preset.patch.waterwayType ?? 'river')}
+                                </p>
+                                <h3 className="mt-2 text-base text-zinc-100">{preset.label}</h3>
+                              </div>
+                              <span className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-zinc-400">
+                                Preset
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+                      <label className="block">
+                        <span className="mb-2 block text-xs uppercase tracking-[0.18em] text-zinc-500">Study Name</span>
+                        <input
+                          value={studyName}
+                          onChange={(event) => setStudyName(event.target.value)}
+                          className="w-full rounded-[20px] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-zinc-100 outline-none transition focus:border-white/20"
+                          placeholder="Study name"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleLaunchPreset}
+                        className="inline-flex items-center justify-center gap-2 rounded-full border border-white/12 bg-white px-5 py-3 text-xs uppercase tracking-[0.16em] text-black"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Launch
+                      </button>
+                    </div>
+
+                    <label className="block rounded-[22px] border border-dashed border-white/10 bg-white/[0.02] p-4">
+                      <span className="mb-2 block text-xs uppercase tracking-[0.18em] text-zinc-500">Import</span>
+                      <input
+                        type="file"
+                        accept=".json,.csv,.geojson"
+                        onChange={(event) => void handleImportFile(event)}
+                        className="block w-full text-sm text-zinc-300 file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:text-xs file:font-semibold file:uppercase file:tracking-[0.18em] file:text-black"
+                      />
+                      <p className="mt-3 text-xs leading-5 text-zinc-500">{importState}</p>
+                    </label>
+                  </div>
+                )}
+              </div>
             </div>
           </section>
         ) : scenario && result ? (
@@ -966,13 +980,13 @@ export default function Workspace() {
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <div className="rounded-full border border-white/10 bg-[#081121]/88 px-4 py-2 text-xs uppercase tracking-[0.18em] text-zinc-300">
-                Module: Bridge Corridor Study
+                Module: Crossing Study
               </div>
               <div className="rounded-full border border-white/10 bg-[#081121]/88 px-4 py-2 text-xs uppercase tracking-[0.18em] text-zinc-300">
                 Active Study: {scenario.name}
               </div>
               <div className="rounded-full border border-white/10 bg-[#081121]/88 px-4 py-2 text-xs uppercase tracking-[0.18em] text-zinc-300">
-                Mode: {scenario.studyState === 'blank-canvas' ? 'Blank Setup' : 'Configured Study'}
+                Mode: {scenario.studyState === 'blank-canvas' ? 'Blank' : 'Configured'}
               </div>
               <div className="rounded-full border border-white/10 bg-[#081121]/88 px-4 py-2 text-xs uppercase tracking-[0.18em] text-zinc-300">
                 Origin: {scenario.dataOrigin.replace(/-/g, ' ')}
@@ -988,7 +1002,7 @@ export default function Workspace() {
                 onClick={() => setSurface('launcher')}
                 className="rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs uppercase tracking-[0.18em] text-zinc-300"
               >
-                Back To Launcher
+                Back
               </button>
             </div>
           </section>
@@ -996,7 +1010,7 @@ export default function Workspace() {
           <section className="mx-auto grid min-h-[calc(100dvh-9rem)] max-w-[960px] place-items-center">
             <div className="rounded-[36px] border border-white/10 bg-zinc-950/84 p-8 text-center shadow-[0_24px_100px_rgba(0,0,0,0.34)]">
               <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">No Active Study</p>
-              <h1 className="mt-4 font-display text-5xl text-zinc-50">Open a study or launch a new one.</h1>
+              <h1 className="mt-4 font-display text-5xl text-zinc-50">Open a study.</h1>
               <div className="mt-6 flex justify-center gap-3">
                 <button
                   type="button"

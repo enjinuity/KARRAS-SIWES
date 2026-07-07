@@ -9,17 +9,17 @@ export function AppShell({ children }: PropsWithChildren) {
   const isWorkspace = location.pathname === '/workspace';
 
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#050816] text-zinc-100">
+    <div className="min-h-screen overflow-x-hidden bg-[#030303] text-zinc-100">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute inset-x-0 top-[-14rem] h-[28rem] bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.22),transparent_55%)]" />
-        <div className="absolute right-[-12rem] top-1/4 h-[32rem] w-[32rem] rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.16),transparent_62%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:80px_80px] opacity-[0.07]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.04),transparent_26%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:96px_96px] opacity-[0.05]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),transparent_18%,transparent_82%,rgba(255,255,255,0.02))]" />
       </div>
       {isWorkspace ? null : <AppHeader />}
       <main
         className={cn(
           'relative z-10 mx-auto',
-          isWorkspace ? 'max-w-none p-0' : 'max-w-[1600px] px-6 pb-8 pt-8 lg:px-10',
+          isWorkspace ? 'max-w-none p-0' : 'max-w-[1600px] px-5 pb-8 pt-6 lg:px-8',
         )}
       >
         {children}

@@ -1,15 +1,15 @@
 const principles = [
   {
-    title: 'What the MVP models',
+    title: 'What the bridge module models',
     body: 'KARRAS evaluates concept-stage bridge crossing feasibility by combining waterway conditions, span demand, navigation clearance, support strategy, and material choice in a deterministic rule engine.',
   },
   {
-    title: 'What the scores mean',
+    title: 'What bridge outputs mean',
     body: 'Feasibility and stability indicate concept strength. Cost and complexity act as counterweights so users can compare practical trade-offs rather than chase a single number.',
   },
   {
-    title: 'What the MVP does not claim',
-    body: 'This is not certified structural analysis and not construction approval software. It is a decision-support layer for early exploration and option screening.',
+    title: 'How module types differ',
+    body: 'Bridge Feasibility is a simulation module. Virtual Lab is an operational workflow module. KARRAS now supports both tool classes without pretending they work the same way.',
   },
 ];
 
@@ -26,12 +26,12 @@ export default function Methodology() {
       <section className="rounded-[32px] border border-white/10 bg-white/[0.03] p-6">
         <p className="text-xs uppercase tracking-[0.3em] text-cyan-300/80">Methodology</p>
         <h1 className="mt-4 max-w-4xl font-display text-5xl leading-[0.95] text-zinc-50 xl:text-6xl">
-          An explainable simulation layer built for concept-stage decision quality.
+          A platform methodology for both simulation logic and operational delivery.
         </h1>
         <p className="mt-5 max-w-3xl text-sm leading-7 text-zinc-400">
-          The MVP is intentionally rule-based and transparent. Every score on the dashboard traces back to visible
-          inputs and understandable model assumptions, which keeps the platform useful even before richer datasets or
-          advanced calibration arrive.
+          KARRAS now has two module classes. Simulation modules stay explainable and rule-based where needed, while
+          operational modules are judged by whether they deliver a credible end-to-end workflow. The current methodology
+          page still centers the bridge engine because that remains the main modeled system in the MVP.
         </p>
       </section>
 
@@ -64,9 +64,9 @@ export default function Methodology() {
           <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Future Expansion</p>
           <h2 className="mt-4 font-display text-4xl text-zinc-50">Why this architecture matters.</h2>
           <p className="mt-4 text-sm leading-7 text-zinc-300">
-            The same input-model-output pipeline can support road alignment, urban flow, and capacity planning modules.
-            The MVP proves the core contract: structured constraints in, explainable simulation logic through, visual
-            insight out.
+            The platform can now host both explainable modeling surfaces and practical institutional workflows. The
+            bridge module proves the simulation side. Virtual Lab proves that KARRAS can also carry operational tools
+            for environments where physical infrastructure is weak or missing.
           </p>
           <div className="mt-6 rounded-[28px] border border-white/10 bg-black/20 p-5">
             <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Boundaries</p>
@@ -74,7 +74,7 @@ export default function Methodology() {
               <li>Uses local browser persistence for saved scenarios in the MVP.</li>
               <li>Authenticated accounts now sync scenarios into a SQLite-backed backend store.</li>
               <li>Assumes deterministic rule weights instead of machine learning.</li>
-              <li>Supports comparison and explanation before collaboration or export workflows.</li>
+              <li>Virtual Lab is framed as an operational module, not a simulation pretending to be one.</li>
             </ul>
           </div>
         </article>

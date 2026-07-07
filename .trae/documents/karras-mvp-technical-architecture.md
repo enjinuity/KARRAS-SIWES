@@ -2,69 +2,73 @@
 ```mermaid
 flowchart LR
     A["React Frontend"] --> B["Application State Layer"]
-    B --> C["Simulation Engine"]
-    C --> D["Scoring And Explanation Layer"]
-    B --> E["Scenario Repository"]
-    B --> F["Authentication Store"]
-    D --> G["Visualization Layer"]
-    E --> G
-    E --> H["Local Persistence"]
-    E --> I["Express API"]
+    B --> C["Bridge Simulation Domain"]
+    B --> D["Virtual Lab Operations Domain"]
+    C --> E["Scoring And Explanation Layer"]
+    C --> F["Bridge Scenario Repository"]
+    D --> G["Institution Workflow Repository"]
+    B --> H["Authentication Store"]
+    E --> I["Bridge Visualization Layer"]
     F --> I
-    I --> J["JSON Data Store"]
+    F --> J["Local Persistence"]
+    G --> K["Express API"]
+    F --> K
+    H --> K
+    K --> L["SQLite Store"]
 ```
 
 ## 2. Technology Description
 - Frontend: React@18 + TypeScript + Vite + Tailwind CSS v3
 - Backend: Express + TypeScript running in the `api` directory
-- State Management: Zustand for scenario state, UI state, and simulation results
-- Visualization: SVG-first rendering with optional canvas enhancement for animated structural feedback
+- State Management: Zustand for shared UI state, bridge scenario state, and future virtual lab workflow state
+- Visualization: SVG-first rendering for the bridge workspace and responsive dashboard surfaces for Virtual Lab
 - Motion: Framer Motion for panel transitions, metric animations, and comparison interactions
-- Persistence: browser localStorage for MVP scenario persistence
-- Persistent Storage: file-based JSON store for authenticated scenarios in the first backend-enabled phase
+- Persistence: browser localStorage for bridge scenario persistence and lightweight client cache where appropriate
+- Persistent Storage: SQLite-backed backend storage for authenticated bridge and virtual lab data
 - Testing: Vitest + React Testing Library for simulation rules and critical UI workflows
 - Initialization Tool: Vite
 
 ## 3. Route Definitions
 | Route | Purpose |
 |-------|---------|
-| / | Main simulation workspace with real-time input and visual feedback |
-| /compare | Compare saved scenarios across multiple metrics |
-| /methodology | Explain assumptions, scoring rules, and MVP boundaries |
+| / | Module launcher and platform home |
+| /workspace | Bridge simulation workspace with real-time input and visual feedback |
+| /reports | Bridge reporting surface |
+| /compare | Compare saved bridge scenarios across multiple metrics |
+| /virtual-lab | Virtual Lab institution dashboard |
+| /virtual-lab/course/:courseId | Course workspace with assignments and roster context |
+| /virtual-lab/student | Student assignment and coding workspace |
+| /virtual-lab/grading | Staff grading console |
+| /methodology | Explain module types, assumptions, scoring rules, and MVP boundaries |
 | /auth | Register and sign in to enable persistent scenario storage |
 
 ## 4. API Definitions
-The expanded MVP keeps simulation logic client-side for responsiveness while introducing a lightweight backend for account access and persistent scenario storage.
+The expanded MVP keeps bridge simulation logic client-side for responsiveness while introducing a lightweight backend for account access, persistent scenario storage, and the Virtual Lab workflow domain.
 
 ### Type Definitions
 ```ts
-type TerrainType = "flat" | "rocky" | "wetland" | "valley";
-
-type MaterialClass = "steel" | "reinforced-concrete" | "composite";
-
-type DeckProfile = "light" | "standard" | "heavy-duty";
-
-type FoundationStrategy = "shallow" | "deep-pile" | "caisson";
-
-type AlignmentStrategy = "direct" | "offset" | "stepped";
-
 type ScenarioInput = {
   id: string;
   name: string;
+  studyState: "blank-canvas" | "configured";
+  dataOrigin: "curated-preset" | "manual-estimate" | "user-import";
+  sourceConfidence: "sample-curated" | "manual-estimate" | "imported-user-data";
+  waterwayType: "river" | "lagoon" | "harbor" | "delta";
   spanDistanceM: number;
-  terrainType: TerrainType;
-  terrainSeverity: number;
+  channelWidthM: number;
+  waterDepthM: number;
+  navigationClearanceM: number;
+  currentVelocity: number;
+  vesselTraffic: number;
+  bankStability: number;
+  scourRisk: number;
+  floodExposure: number;
   loadLevel: number;
   supportCount: number;
-  supportSpacingBias: number;
-  materialClass: MaterialClass;
-  deckProfile: DeckProfile;
-  foundationStrategy: FoundationStrategy;
-  alignmentStrategy: AlignmentStrategy;
-  windExposure: number;
-  seismicDemand: number;
-  liveLoadPosition: number;
-  safetyPreference: number;
+  bridgeSystem: "girder" | "truss" | "arch" | "cable-stayed";
+  materialClass: "steel" | "reinforced-concrete" | "composite";
+  foundationStrategy: "shallow" | "deep-pile" | "caisson";
+  alignmentStrategy: "direct" | "offset" | "stepped";
 };
 
 type SimulationResult = {
@@ -72,10 +76,50 @@ type SimulationResult = {
   stabilityScore: number;
   costScore: number;
   complexityScore: number;
+  confidenceLabel: string;
+  decisionSignal: string;
+  basisNote: string;
   status: "viable" | "borderline" | "high-risk" | "failed";
   dominantRisks: string[];
   recommendations: string[];
   explanation: string;
+};
+
+type Institution = {
+  id: string;
+  name: string;
+  shortName: string;
+  accentColor: string;
+  currentTermLabel: string;
+};
+
+type Course = {
+  id: string;
+  institutionId: string;
+  code: string;
+  title: string;
+  term: string;
+  instructorName: string;
+  studentCount: number;
+};
+
+type Assignment = {
+  id: string;
+  courseId: string;
+  title: string;
+  prompt: string;
+  status: "draft" | "published" | "closed";
+  dueAt: string;
+};
+
+type Submission = {
+  id: string;
+  assignmentId: string;
+  studentId: string;
+  studentName: string;
+  submittedAt: string | null;
+  status: "draft" | "submitted" | "graded";
+  score: number | null;
 };
 
 type AuthUser = {
@@ -95,10 +139,20 @@ type AuthResponse = {
 POST /api/auth/register
 POST /api/auth/login
 GET /api/auth/me
+
 GET /api/scenarios
 POST /api/scenarios
 PUT /api/scenarios/:id
 DELETE /api/scenarios/:id
+
+GET /api/institutions/:id
+GET /api/institutions/:id/courses
+GET /api/courses/:id/assignments
+POST /api/courses/:id/assignments
+GET /api/assignments/:id/submissions
+POST /api/assignments/:id/submissions
+PUT /api/submissions/:id/grade
+GET /api/courses/:id/export
 ```
 
 ## 5. Server Architecture Diagram
@@ -106,8 +160,12 @@ DELETE /api/scenarios/:id
 flowchart TD
     A["Auth Routes"] --> B["Auth Service"]
     C["Scenario Routes"] --> D["Scenario Service"]
-    B --> E["JSON Repository"]
-    D --> E
+    E["Virtual Lab Routes"] --> F["Institution Service"]
+    E --> G["Assignment And Submission Service"]
+    B --> H["SQLite Repository"]
+    D --> H
+    F --> H
+    G --> H
 ```
 
 ## 6. Data Model
@@ -118,20 +176,25 @@ erDiagram
         string id
         string ownerId
         string name
+        string studyState
+        string dataOrigin
+        string sourceConfidence
         number spanDistanceM
-        string terrainType
-        number terrainSeverity
+        string waterwayType
+        number channelWidthM
+        number waterDepthM
+        number navigationClearanceM
+        number currentVelocity
+        number vesselTraffic
+        number bankStability
+        number scourRisk
+        number floodExposure
         number loadLevel
         number supportCount
-        number supportSpacingBias
+        string bridgeSystem
         string materialClass
-        string deckProfile
         string foundationStrategy
         string alignmentStrategy
-        number windExposure
-        number seismicDemand
-        number liveLoadPosition
-        number safetyPreference
     }
 
     USER {
@@ -151,12 +214,50 @@ erDiagram
         string explanation
     }
 
+    INSTITUTION {
+        string id
+        string name
+        string shortName
+        string accentColor
+        string currentTermLabel
+    }
+
+    COURSE {
+        string id
+        string institutionId
+        string code
+        string title
+        string term
+        string instructorName
+    }
+
+    ASSIGNMENT {
+        string id
+        string courseId
+        string title
+        string status
+        string dueAt
+    }
+
+    SUBMISSION {
+        string id
+        string assignmentId
+        string studentId
+        string submittedAt
+        string status
+        number score
+    }
+
     USER ||--o{ SCENARIO : "owns"
     SCENARIO ||--|| SIMULATION_RESULT : "produces"
+    INSTITUTION ||--o{ COURSE : "contains"
+    COURSE ||--o{ ASSIGNMENT : "contains"
+    ASSIGNMENT ||--o{ SUBMISSION : "receives"
+    USER ||--o{ SUBMISSION : "authors"
 ```
 
 ### 6.2 Data Definition Language
-The frontend keeps a local cache while the backend stores authenticated accounts and cloud scenarios in JSON:
+The frontend keeps a local cache while the backend stores authenticated accounts, bridge scenarios, and virtual lab workflow data in SQLite:
 
 ```ts
 type ScenarioStore = {
@@ -166,11 +267,20 @@ type ScenarioStore = {
   comparisonScenarioIds: string[];
   syncState: "local-only" | "syncing" | "synced";
 };
+
+type VirtualLabStore = {
+  institution: Institution | null;
+  courses: Course[];
+  assignmentsByCourseId: Record<string, Assignment[]>;
+  submissionsByAssignmentId: Record<string, Submission[]>;
+  activeCourseId: string | null;
+  activeAssignmentId: string | null;
+};
 ```
 
 ## 7. Implementation Notes
-- Use a domain-first folder structure with `simulation`, `visualization`, `scenarios`, `comparison`, and `methodology` modules separated from shared UI primitives.
-- Keep the simulation engine deterministic and explainable. Use weighted rules, thresholds, and penalties instead of opaque AI logic in the MVP.
-- Separate `input normalization`, `derived metric calculation`, `score aggregation`, and `recommendation generation` into pure functions so the engine remains testable and portable to future scenario types.
-- Maintain a scenario schema that can later support roads, traffic, and capacity planning modules through adapter layers rather than rewriting core state infrastructure.
-- Build the workspace as a premium desktop application feel: large canvas, high-contrast metric panels, fast transitions, drag-aware interaction zones, and strong information hierarchy.
+- Use a domain-first folder structure with `simulation`, `virtual-lab`, `comparison`, `reporting`, and `methodology` modules separated from shared UI primitives.
+- Keep the bridge simulation engine deterministic and explainable. Use weighted rules, thresholds, and explicit screening checks instead of opaque AI logic in the MVP.
+- Keep Virtual Lab as a distinct workflow domain rather than forcing its data model into the bridge scenario schema.
+- Separate bridge `input normalization`, `derived metric calculation`, `screening logic`, and `recommendation generation` into pure functions so the engine remains testable and portable.
+- Build the bridge workspace as a premium desktop planning cockpit and the Virtual Lab student experience as a strongly mobile-first workflow surface.

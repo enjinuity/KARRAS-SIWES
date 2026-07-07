@@ -7,6 +7,10 @@ import Home from '@/pages/Home';
 import Methodology from '@/pages/Methodology';
 import Auth from '@/pages/Auth';
 import Reports from '@/pages/Reports';
+import VirtualLab from '@/pages/VirtualLab';
+import VirtualLabCourse from '@/pages/VirtualLabCourse';
+import VirtualLabGrading from '@/pages/VirtualLabGrading';
+import VirtualLabStudent from '@/pages/VirtualLabStudent';
 import Workspace from '@/pages/Workspace';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -25,6 +29,10 @@ export default function App() {
           <Route path="/workspace" element={<Workspace />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/compare" element={<Compare />} />
+          <Route path="/virtual-lab" element={<VirtualLab />} />
+          <Route path="/virtual-lab/course/:courseId" element={<VirtualLabCourse />} />
+          <Route path="/virtual-lab/student" element={<VirtualLabStudent />} />
+          <Route path="/virtual-lab/grading" element={<VirtualLabGrading />} />
           <Route path="/methodology" element={<Methodology />} />
           <Route path="/auth" element={<Auth />} />
         </Routes>

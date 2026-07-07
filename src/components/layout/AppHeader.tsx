@@ -1,12 +1,13 @@
 import { Link, NavLink } from 'react-router-dom';
-import { Activity, ArrowRightLeft, Binary, BookOpenText, Cloud, FileText, ShieldCheck } from 'lucide-react';
+import { Activity, ArrowRightLeft, Binary, BookOpenText, Cloud, FileText, GraduationCap, ShieldCheck } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
 
 const navigation = [
   { to: '/', label: 'Home', icon: Activity },
-  { to: '/workspace', label: 'Workspace', icon: Binary },
+  { to: '/workspace', label: 'Bridge', icon: Binary },
+  { to: '/virtual-lab', label: 'Virtual Lab', icon: GraduationCap },
   { to: '/reports', label: 'Reports', icon: FileText },
   { to: '/compare', label: 'Compare', icon: ArrowRightLeft },
   { to: '/methodology', label: 'Methodology', icon: BookOpenText },
@@ -25,7 +26,7 @@ export function AppHeader() {
           <div className="min-w-0">
             <p className="font-display text-lg uppercase tracking-[0.3em] text-zinc-100">KARRAS</p>
             <p className="hidden text-xs uppercase tracking-[0.24em] text-zinc-500 sm:block">
-              Infrastructure Decision Support
+              Technical Problem-Solving Platform
             </p>
           </div>
         </Link>

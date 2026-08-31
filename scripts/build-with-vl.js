@@ -1,5 +1,5 @@
 import { cp, mkdir, rm } from 'node:fs/promises';
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,9 +11,31 @@ const KARRAS_DIST = resolve(ROOT, 'dist');
 const VL_DIST_SRC = resolve(VL_DIR, 'dist');
 const VL_DIST_OUT = resolve(KARRAS_DIST, 'vl');
 
-const run = (cmd, cwd) => {
-  console.log(`\n$ ${cmd}`);
-  execSync(cmd, { stdio: 'inherit', cwd });
+const run = (cmd, cwd, extraEnv = {}) => {
+  console.log(`\n$ (cwd=${cwd}) ${cmd}`);
+  execSync(cmd, {
+    stdio: 'inherit',
+    cwd,
+    env: { ...process.env, ...extraEnv },
+  });
+};
+
+const buildVl = () => {
+  const cfg = resolve(VL_DIR, 'vite.config.js');
+  const rootVite = resolve(ROOT, 'node_modules', '.bin', 'vite');
+  const vlVite = resolve(VL_DIR, 'node_modules', '.bin', 'vite');
+  const vite = existsSync(vlVite) ? vlVite : rootVite;
+  console.log(`\n[build-with-vl] building VL with vite=${vite}\n  project=${VL_DIR}\n  config=${cfg}\n  outDir=${VL_DIST_SRC}`);
+  const res = spawnSync(vite, ['build', '--config', cfg, '--outDir', VL_DIST_SRC], {
+    cwd: ROOT,
+    stdio: 'inherit',
+    env: { ...process.env },
+  });
+  if (res.status !== 0) {
+    console.error(`[build-with-vl] VL vite build failed, exit=${res.status}`);
+    process.exit(res.status ?? 1);
+  }
+  console.log(`[build-with-vl] VL build done; checking ${VL_DIST_SRC}`);
 };
 
 const main = async () => {
@@ -35,10 +57,17 @@ const main = async () => {
       console.warn('[build-with-vl] warning: dep probe failed, continuing anyway', e.message);
     }
   }
-  run('npm run build', VL_DIR);
+
+  await rm(VL_DIST_SRC, { recursive: true, force: true });
+  buildVl();
 
   if (!existsSync(VL_DIST_SRC)) {
-    console.error('[build-with-vl] virtual-lab build produced no dist/');
+    console.error(`[build-with-vl] virtual-lab build produced no dist/ at ${VL_DIST_SRC}`);
+    try {
+      const probe = spawnSync('ls', ['-la', ROOT, VL_DIR], { stdio: 'pipe', encoding: 'utf8' });
+      console.error('[build-with-vl] ROOT ls:', probe.stdout?.slice?.(0, 3000));
+      console.error('[build-with-vl] VL ls:', probe.stderr?.slice?.(0, 3000));
+    } catch (_) {}
     process.exit(1);
   }
 

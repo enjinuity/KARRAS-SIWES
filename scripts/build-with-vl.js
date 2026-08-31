@@ -22,7 +22,10 @@ const main = async () => {
     process.exit(1);
   }
 
-  if (!process.env.SKIP_VL_INSTALL) {
+  const VL_NODE_MODULES = resolve(VL_DIR, 'node_modules');
+  const needsInstall = !existsSync(VL_NODE_MODULES);
+  if (needsInstall && !process.env.SKIP_VL_INSTALL) {
+    console.log('[build-with-vl] virtual-lab/node_modules missing, installing...');
     run('npm install --no-audit --no-fund --loglevel=error', VL_DIR);
   }
   run('npm run build', VL_DIR);

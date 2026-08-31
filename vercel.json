@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "installCommand": "npm install --no-audit --no-fund --loglevel=error",
+  "installCommand": "npm install --no-audit --no-fund --loglevel=error && npm --prefix virtual-lab install --no-audit --no-fund --loglevel=error",
   "buildCommand": "npm run build:all:vercel",
   "outputDirectory": "dist",
   "cleanUrls": true,

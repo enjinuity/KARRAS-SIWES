@@ -1,12 +1,13 @@
 import { Link, NavLink } from 'react-router-dom';
-import { Activity, ArrowRightLeft, BookOpenText, Cloud, FileText, LayoutGrid, ShieldCheck } from 'lucide-react';
+import { ArrowRightLeft, BookOpenText, Cloud, FileText, LayoutGrid, ShieldCheck, FolderKanban } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
 
 const navigation = [
-  { to: '/', label: 'Home', icon: Activity },
-  { to: '/workspace', label: 'Workspace', icon: LayoutGrid },
+  { to: '/', label: 'Home' },
+  { to: '/systems', label: 'Systems', icon: LayoutGrid },
+  { to: '/library', label: 'Library', icon: FolderKanban },
   { to: '/reports', label: 'Reports', icon: FileText },
   { to: '/compare', label: 'Compare', icon: ArrowRightLeft },
   { to: '/methodology', label: 'Methodology', icon: BookOpenText },
@@ -24,7 +25,9 @@ export function AppHeader() {
           </div>
           <div className="min-w-0">
             <p className="font-display text-lg uppercase tracking-[0.24em] text-zinc-100">KARRAS</p>
-            <p className="hidden text-xs uppercase tracking-[0.22em] text-zinc-600 sm:block">Systems Workspace</p>
+            <p className="hidden text-xs uppercase tracking-[0.22em] text-zinc-600 sm:block">
+              Modular systems platform
+            </p>
           </div>
         </Link>
 
@@ -51,12 +54,12 @@ export function AppHeader() {
                 className={({ isActive }) =>
                   cn(
                     'shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm text-zinc-500 transition hover:text-zinc-100',
-                    'flex items-center gap-2',
+                    Icon ? 'flex items-center gap-2' : '',
                     isActive && 'bg-white/8 text-zinc-100',
                   )
                 }
               >
-                <Icon className="h-4 w-4" />
+                {Icon ? <Icon className="h-4 w-4" /> : null}
                 {label}
               </NavLink>
             ))}

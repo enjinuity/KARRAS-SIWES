@@ -5,6 +5,17 @@ import { traeBadgePlugin } from 'vite-plugin-trae-solo-badge';
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    host: '0.0.0.0',
+    port: 4173,
+    proxy: {
+      '/vl': {
+        target: 'http://127.0.0.1:5173',
+        changeOrigin: true,
+        ws: true,
+      },
+    },
+  },
   build: {
     sourcemap: 'hidden',
   },

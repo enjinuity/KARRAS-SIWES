@@ -11,6 +11,7 @@
     "build": "tsc -b && vite build",
     "build:vl": "npm --prefix virtual-lab run build && echo 'VL build: virtual-lab/dist'",
     "build:all": "npm run build && npm run build:vl",
+    "build:all:vercel": "npm run build && node scripts/build-with-vl.js",
     "preview:vl": "npm --prefix virtual-lab run preview",
     "lint": "eslint .",
     "preview": "vite preview",

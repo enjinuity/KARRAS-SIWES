@@ -20,8 +20,8 @@ export function AppHeader() {
     <header className="sticky top-0 z-30 border-b border-white/8 bg-[#030303]/92 backdrop-blur-xl">
       <div className="mx-auto flex max-w-[1600px] flex-col gap-4 px-5 py-4 lg:px-8 xl:flex-row xl:items-center xl:justify-between">
         <Link to="/" className="flex items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-[18px] border border-white/10 bg-white/[0.03]">
-            <span className="font-display text-2xl text-white">K</span>
+          <div className="flex h-12 w-12 items-center justify-center rounded-[18px] border border-white/10 bg-white/[0.03] overflow-hidden">
+            <img src="/k-logo.svg" alt="KARRAS" width="32" height="32" className="block" />
           </div>
           <div className="min-w-0">
             <p className="font-display text-lg uppercase tracking-[0.24em] text-zinc-100">KARRAS</p>

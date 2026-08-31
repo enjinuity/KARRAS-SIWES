@@ -22,11 +22,18 @@ const main = async () => {
     process.exit(1);
   }
 
-  const VL_NODE_MODULES = resolve(VL_DIR, 'node_modules');
-  const needsInstall = !existsSync(VL_NODE_MODULES);
-  if (needsInstall && !process.env.SKIP_VL_INSTALL) {
-    console.log('[build-with-vl] virtual-lab/node_modules missing, installing...');
-    run('npm install --no-audit --no-fund --loglevel=error', VL_DIR);
+  if (!process.env.SKIP_VL_INSTALL) {
+    try {
+      const VL_VITE = resolve(VL_DIR, 'node_modules', '.bin', 'vite');
+      const ROOT_VITE = resolve(ROOT, 'node_modules', '.bin', 'vite');
+      const hasVite = existsSync(VL_VITE) || existsSync(ROOT_VITE);
+      if (!hasVite) {
+        console.log('[build-with-vl] VL vite not found on workspace path, installing workspace deps...');
+        run('npm install --no-audit --no-fund --loglevel=error --workspaces --include-workspace-root', ROOT);
+      }
+    } catch (e) {
+      console.warn('[build-with-vl] warning: dep probe failed, continuing anyway', e.message);
+    }
   }
   run('npm run build', VL_DIR);
 

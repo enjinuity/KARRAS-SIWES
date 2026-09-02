@@ -356,8 +356,11 @@ export default function InstructorManualDetail() {
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Student</th>
+                      <th>Matric No.</th>
+                      <th>Level</th>
+                      <th>Name</th>
                       <th>Email</th>
+                      <th>Dept / Faculty</th>
                       {tasks.map((t) => (
                         <th key={t.id || t.order_index}>
                           T{Number(t.order_index) || '?'}
@@ -372,8 +375,15 @@ export default function InstructorManualDetail() {
                   <tbody>
                     {progressRows.map((r) => (
                       <tr key={r.studentId}>
-                        <td>{r.fullName}</td>
+                        <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13 }}>{r.matricNo || '—'}</td>
+                        <td>{r.level ? `${r.level}L` : '—'}</td>
+                        <td>{r.fullName || '—'}</td>
                         <td>{r.email}</td>
+                        <td className="small muted">
+                          {r.department ? `${r.department}` : '—'}
+                          {r.faculty && r.department ? ' · ' : ''}
+                          {r.faculty ? r.faculty : ''}
+                        </td>
                         {tasks.map((t) => {
                           const cell = r.taskGrades[t.id] || {}
                           return (

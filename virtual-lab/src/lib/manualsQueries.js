@@ -68,29 +68,40 @@ export const getManualProgressRows = async (manualId, tasks) => {
     .from('task_submissions')
     .select(`
       task_id, student_id, status, grade, auto_passed, submitted_at,
-      users!task_submissions_student_id_fkey(id, full_name, email)
+      users!task_submissions_student_id_fkey(id, full_name, email, matric_no, faculty, department, level)
     `)
     .eq('manual_id', manualId)
   if (error) throw error
 
+  // Also fetch all enrolled students who have NOT started yet so they appear in the grading grid
+  const { data: enrollments, error: enrollErr } = await supabase
+    .from('manual_enrollments')
+    .select(`student_id, users:student_id(id, full_name, email, matric_no, faculty, department, level)`)
+    .eq('manual_id', manualId)
+  if (enrollErr) throw enrollErr
+
   const byStudent = new Map()
-  for (const s of data || []) {
-    const uid = s.users.id
-    if (!byStudent.has(uid)) {
-      byStudent.set(uid, {
-        studentId: uid,
-        email: s.users.email,
-        fullName: s.users.full_name,
+  const pushOne = (u, seed) => {
+    if (!u?.id) return
+    if (!byStudent.has(u.id)) {
+      byStudent.set(u.id, {
+        studentId: u.id,
+        email: u.email || '',
+        fullName: u.full_name || '',
+        matricNo: u.matric_no || '',
+        faculty: u.faculty || '',
+        department: u.department || '',
+        level: u.level || '',
         taskGrades: {},
       })
     }
-    byStudent.get(uid).taskGrades[s.task_id] = {
-      grade: s.grade,
-      status: s.status,
-      auto_passed: s.auto_passed,
-      submitted_at: s.submitted_at,
+    if (seed) {
+      const r = byStudent.get(u.id)
+      r.taskGrades[seed.task_id] = { ...(r.taskGrades[seed.task_id] || {}), ...seed }
     }
   }
+  for (const s of data || []) pushOne(s.users, { task_id: s.task_id, grade: s.grade, status: s.status, auto_passed: s.auto_passed, submitted_at: s.submitted_at })
+  for (const e of enrollments || []) pushOne(e.users, null)
 
   const rows = Array.from(byStudent.values()).map((r) => {
     let total = 0

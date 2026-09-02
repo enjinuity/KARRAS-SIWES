@@ -28,9 +28,13 @@ const triggerBlob = (blob, filename) => {
 
 export const buildManualGradeCsv = ({ manual, tasks, rows }) => {
   const header = [
-    'Student ID',
+    'Matric No.',
+    'Level',
+    'Faculty',
+    'Department',
     'Student Email',
     'Student Name',
+    'Student ID (UUID)',
     ...tasks.map((t) => `Task ${t.order_index}: ${t.title || ''} (${t.points || 0})`),
     'Total Earned',
     'Total Possible',
@@ -46,9 +50,13 @@ export const buildManualGradeCsv = ({ manual, tasks, rows }) => {
     }, 0)
     const pct = totalPossible ? Number(((earned / totalPossible) * 100).toFixed(2)) : 0
     return [
-      r.studentId,
+      r.matricNo || '',
+      r.level || '',
+      r.faculty || '',
+      r.department || '',
       r.email,
       r.fullName,
+      r.studentId,
       ...tasks.map((t) => {
         const cell = r.taskGrades[t.id]
         if (!cell) return ''

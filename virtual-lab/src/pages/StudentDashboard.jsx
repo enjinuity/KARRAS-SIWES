@@ -40,7 +40,7 @@ export default function StudentDashboard() {
             .from('assignments')
             .select('id, title, description, deadline, created_at, manual_pdf_url, users!assignments_instructor_id_fkey(full_name)')
             .order('deadline', { ascending: false }),
-          supabase.from('submissions')
+          supabase
             .from('submissions')
             .select('assignment_id, status')
             .eq('student_id', profile.id),

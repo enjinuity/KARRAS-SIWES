@@ -1,20 +1,33 @@
--- 009_seed_sample_manuals.sql
--- Example manual import batch: CSC222 Game Programming with Pygame, 4 sample tasks.
--- (These are demo / seed rows, run against the Supabase SQL Editor to seed a demo instructor account.)
+-- 009b_seed_sample_manuals_standalone.sql
+-- NO PREREQUISITES: works even if auth.users or public.users demo accounts don't exist yet.
+-- Picks the FIRST public.user with role='instructor' to own the seeded CSC222 manual.
+-- If no instructor exists yet, creates one locally in public.users (login separately needs auth.users for JWT — but at least data is seeded).
 
--- Only seed if instructor demo account exists (from 002_seed_users.sql)
-DO $seed_manuals_009$
+DO $seed_manuals_009b$
 DECLARE
     _instructor_id UUID;
     _manual_id UUID;
 BEGIN
-    SELECT id INTO _instructor_id FROM public.users WHERE email = 'instructor@demo.com' AND role = 'instructor';
+    -- 1. Find ANY instructor user (not just the demo one)
+    SELECT id INTO _instructor_id
+      FROM public.users
+     WHERE role = 'instructor'
+     ORDER BY created_at ASC NULLS LAST
+     LIMIT 1;
+
+    -- 2. If NO instructor user exists in public.users yet, bootstrap one with a fake UUID
+    --    (Later when someone actually creates an auth login, 002_seed_users will upsert correctly.)
     IF _instructor_id IS NULL THEN
-        RAISE NOTICE 'Demo instructor not seeded yet; skipping manual seed.';
-        RETURN;
+        _instructor_id := '00000000-0000-0000-0000-000000000001'::uuid;
+        INSERT INTO public.users (id, email, role, full_name)
+        VALUES (_instructor_id, 'instructor@demo.com', 'instructor', 'Demo Instructor')
+        ON CONFLICT (id) DO NOTHING;
+        RAISE NOTICE 'No instructor found in public.users; bootstrapped one (id=0000…001). Run 002_seed_users.sql after creating Auth dashboard users to link real logins.';
     END IF;
 
-    -- Upsert a demo manual
+    RAISE NOTICE 'Seeding CSC222 manual for instructor id=%', _instructor_id;
+
+    -- 3. Upsert the manual
     INSERT INTO public.manuals (
         instructor_id, course_code, title, description, semester,
         deadline, published, import_batch_id
@@ -38,7 +51,9 @@ BEGIN
          LIMIT 1;
     END IF;
 
-    -- Upsert 4 sample tasks
+    RAISE NOTICE 'Manual id: %', _manual_id;
+
+    -- 4. Upsert 4 sample tasks
     INSERT INTO public.tasks (
         manual_id, order_index, title, instruction_text,
         pdf_section_label, pdf_page_start, pdf_page_end,
@@ -149,7 +164,7 @@ while running:
         player.move_ip(0, speed)
 
     screen.fill((0, 0, 0))
-    pygame.draw.rect(screen, (30, 120, 255), player)
+    pygame.draw.rect(screen, (0, 90, 255), player)
     pygame.display.flip()
     clock.tick(60)
 
@@ -157,4 +172,6 @@ pygame.quit()
 $$,
        NULL, 20)
     ON CONFLICT (manual_id, order_index) DO NOTHING;
-END $seed_manuals_009$;
+
+    RAISE NOTICE 'Seeded 4 tasks for CSC222 manual id=%', _manual_id;
+END $seed_manuals_009b$;

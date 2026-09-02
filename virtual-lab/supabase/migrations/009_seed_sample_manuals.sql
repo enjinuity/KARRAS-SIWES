@@ -3,7 +3,7 @@
 -- (These are demo / seed rows, run against the Supabase SQL Editor to seed a demo instructor account.)
 
 -- Only seed if instructor demo account exists (from 002_seed_users.sql)
-DO $$
+DO $seed_manuals_009$
 DECLARE
     _instructor_id UUID;
     _manual_id UUID;
@@ -32,7 +32,10 @@ BEGIN
     RETURNING id INTO _manual_id;
 
     IF _manual_id IS NULL THEN
-        SELECT id INTO _manual_id FROM public.manuals WHERE import_batch_id = 'seed-csc222-v1';
+        SELECT id INTO _manual_id
+          FROM public.manuals
+         WHERE import_batch_id = 'seed-csc222-v1'
+         LIMIT 1;
     END IF;
 
     -- Upsert 4 sample tasks
@@ -154,4 +157,4 @@ pygame.quit()
 $$,
        NULL, 20)
     ON CONFLICT (manual_id, order_index) DO NOTHING;
-END $$;
+END $seed_manuals_009$;

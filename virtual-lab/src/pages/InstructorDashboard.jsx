@@ -44,9 +44,12 @@ export default function InstructorDashboard() {
   const [manuals, setManuals] = useState([])
 
   const [importOpen, setImportOpen] = useState(false)
+  const [importMode, setImportMode] = useState('json')
   const [importText, setImportText] = useState(() => JSON.stringify(SAMPLE_IMPORT, null, 2))
+  const [importPdf, setImportPdf] = useState(null)
   const [importError, setImportError] = useState(null)
   const [importResult, setImportResult] = useState(null)
+  const [importing, setImporting] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
 
   const supabaseStorageUrl = `${import.meta.env.VITE_SUPABASE_URL.replace(/\/$/, '')}/storage/v1/object/public/manuals`
@@ -163,6 +166,7 @@ export default function InstructorDashboard() {
   const runImport = async () => {
     setImportError(null)
     setImportResult(null)
+    setImporting(true)
     try {
       let json
       try { json = JSON.parse(importText) } catch (e) { throw new Error('JSON parse failed: ' + e.message) }
@@ -170,6 +174,13 @@ export default function InstructorDashboard() {
       if (!valid.ok) throw new Error('Invalid import:\n• ' + valid.errors.join('\n• '))
       if (!profile) throw new Error('Not signed in')
       const m = valid.normalized
+
+      let manual_pdf_url = null
+      if (importPdf) {
+        const url = await uploadPdf(importPdf)
+        if (url) manual_pdf_url = url
+      }
+
       const manual = await createManual({
         instructor_id: profile.id,
         course_code: m.course_code,
@@ -179,15 +190,19 @@ export default function InstructorDashboard() {
         deadline: m.deadline,
         published: m.published,
         import_batch_id: m.import_batch_id,
+        manual_pdf_url,
       })
       const tasks = await upsertTasksForManual(manual.id, m.tasks)
       setImportResult({ manual, tasksCount: tasks.length })
       setImportOpen(false)
       setImportText(JSON.stringify(SAMPLE_IMPORT, null, 2))
+      setImportPdf(null)
       navigate(`/instructor/manual/${manual.id}`)
       await refresh()
     } catch (err) {
       setImportError(err.message || String(err))
+    } finally {
+      setImporting(false)
     }
   }
 
@@ -449,51 +464,124 @@ export default function InstructorDashboard() {
       </div>
 
       {importOpen && (
-        <div className="modal-backdrop" onClick={() => { setImportOpen(false); setImportError(null); setImportResult(null) }}>
+        <div className="modal-backdrop" onClick={() => { setImportOpen(false); setImportError(null); setImportResult(null); setImportPdf(null) }}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="row">
-              <h2 className="mb-0">Bulk import: manual + tasks</h2>
-              <button className="btn btn-ghost btn-sm" onClick={() => { setImportOpen(false); setImportError(null); setImportResult(null) }}>Close</button>
+              <h2 className="mb-0">Create a lab manual</h2>
+              <button className="btn btn-ghost btn-sm" onClick={() => { setImportOpen(false); setImportError(null); setImportResult(null); setImportPdf(null) }}>Close</button>
             </div>
             <div className="small muted" style={{ marginTop: 6 }}>
-              Paste a JSON document with the manual metadata + its ordered array of tasks. The template below mirrors our demo CSC222 pack — replace the values with your actual course.
+              Three ways to create a semester-long lab manual + its ordered tasks. Choose whichever has the least work for you.
             </div>
-            {importError && <div className="error" style={{ whiteSpace: 'pre-wrap' }}>{importError}</div>}
-            {importResult && <div className="success">Imported &quot;{importResult.manual.course_code} — {importResult.manual.title}&quot; with {importResult.tasksCount} tasks.</div>}
-            <div className="field" style={{ marginTop: 10 }}>
-              <label className="label" htmlFor="import_json">Import JSON</label>
-              <textarea
-                id="import_json"
-                className="textarea"
-                style={{ minHeight: 380, fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: 13, lineHeight: 1.5 }}
-                value={importText}
-                onChange={(e) => setImportText(e.target.value)}
-                spellCheck={false}
-              />
+
+            <div className="tabs" role="tablist" style={{ marginTop: 16 }}>
+              <button
+                role="tab" aria-selected={importMode === 'json'}
+                className={'tab sm' + (importMode === 'json' ? ' tab-active' : '')}
+                onClick={() => setImportMode('json')}
+              >
+                1. Bulk JSON import
+              </button>
+              <button
+                role="tab" aria-selected={importMode === 'pdf-ai'}
+                className={'tab sm' + (importMode === 'pdf-ai' ? ' tab-active' : '')}
+                onClick={() => setImportMode('pdf-ai')}
+              >
+                2. Extract tasks from PDF (AI)
+              </button>
+              <button
+                role="tab" aria-selected={importMode === 'manual'}
+                className={'tab sm' + (importMode === 'manual' ? ' tab-active' : '')}
+                onClick={() => { setImportOpen(false); setTimeout(() => { const el = document.getElementById('course_code'); if (el) el.focus() }, 80) }}
+              >
+                3. Create manually (per-task editor)
+              </button>
             </div>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button className="btn btn-secondary btn-sm" onClick={() => setImportText(JSON.stringify(SAMPLE_IMPORT, null, 2))}>Restore template</button>
-                <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer' }}>
-                  Load file
-                  <input
-                    type="file"
-                    accept="application/json,.json,text/plain"
-                    style={{ display: 'none' }}
-                    onChange={async (e) => {
-                      const f = e.target.files?.[0]
-                      if (!f) return
-                      const text = await f.text()
-                      setImportText(text)
-                    }}
+
+            {importMode === 'json' && (
+              <>
+                {importError && <div className="error" style={{ whiteSpace: 'pre-wrap' }}>{importError}</div>}
+                {importResult && <div className="success">Imported &quot;{importResult.manual.course_code} — {importResult.manual.title}&quot; with {importResult.tasksCount} tasks.</div>}
+                <div className="field" style={{ marginTop: 4 }}>
+                  <label className="label" htmlFor="import_json">
+                    Paste or upload your manual + tasks JSON
+                    <span className="small muted" style={{ marginLeft: 8 }}>(template below — replace the values)</span>
+                  </label>
+                  <textarea
+                    id="import_json"
+                    className="textarea"
+                    style={{ minHeight: 320, fontFamily: "'JetBrains Mono', ui-monospace, monospace", fontSize: 13, lineHeight: 1.5 }}
+                    value={importText}
+                    onChange={(e) => setImportText(e.target.value)}
+                    spellCheck={false}
                   />
-                </label>
+                </div>
+
+                <div className="field" style={{ marginTop: 4 }}>
+                  <label className="label" htmlFor="import_json_pdf">
+                    Manual PDF
+                    <span className="small muted" style={{ marginLeft: 8 }}>(optional — attach it now so students can jump straight to page ranges)</span>
+                  </label>
+                  <input
+                    id="import_json_pdf"
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    className="input"
+                    style={{ paddingInline: 10, lineHeight: 1.2, paddingBlock: 10 }}
+                    onChange={(e) => { const f = e.target.files?.[0]; setImportPdf(f || null) }}
+                  />
+                  {importPdf && (
+                    <div className="small" style={{ marginTop: 6 }}>
+                      <span className="muted">Selected:</span> {importPdf.name} <span className="muted">({Math.round(importPdf.size / 1024)} KB)</span>
+                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => setImportPdf(null)} style={{ marginLeft: 8, padding: '2px 8px' }}>Remove</button>
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', flexWrap: 'wrap', marginTop: 12 }}>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button className="btn btn-secondary btn-sm" onClick={() => setImportText(JSON.stringify(SAMPLE_IMPORT, null, 2))}>Restore template</button>
+                    <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer' }}>
+                      Load JSON file
+                      <input
+                        type="file"
+                        accept="application/json,.json,text/plain"
+                        style={{ display: 'none' }}
+                        onChange={async (e) => {
+                          const f = e.target.files?.[0]
+                          if (!f) return
+                          const text = await f.text()
+                          setImportText(text)
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button className="btn btn-secondary btn-sm" onClick={() => { setImportOpen(false); setImportError(null); setImportPdf(null) }}>Cancel</button>
+                    <button className="btn btn-sm" onClick={runImport} disabled={importing}>{importing ? 'Importing…' : 'Validate + import'}</button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {importMode === 'pdf-ai' && (
+              <div style={{
+                border: '1px dashed rgba(255,255,255,0.16)',
+                borderRadius: 20,
+                padding: 24,
+                marginTop: 4,
+                textAlign: 'center'
+              }}>
+                <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: '1.05rem' }}>📚 AI extract from manual PDF</h3>
+                <p className="small muted" style={{ marginTop: 8, marginBottom: 8 }}>
+                  Upload a manual PDF and we&apos;ll automatically extract the ordered task list, starter code, page ranges, and expected outputs.
+                </p>
+                <input type="file" accept="application/pdf,.pdf" disabled style={{ opacity: 0.5, margin: '10px auto', display: 'block' }} />
+                <div className="small" style={{ color: 'var(--warning)' }}>
+                  Coming soon — not available in this prototype yet. Use Option 1 (Bulk JSON) or Option 3 (per-task editor) in the meantime.
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button className="btn btn-secondary btn-sm" onClick={() => { setImportOpen(false); setImportError(null) }}>Cancel</button>
-                <button className="btn btn-sm" onClick={runImport}>Validate + import</button>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}

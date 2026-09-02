@@ -9,15 +9,50 @@ let pyodideLoaded = false
 let pyodideLoadingPromise = null
 const captureStdoutKey = 'py_stdout_capture'
 
-const ensurePyodide = async () => {
-  if (pyodideLoaded) return
-  if (pyodideLoadingPromise) return pyodideLoadingPromise
-  pyodideLoadingPromise = (async () => {
-    const { loadPyodide } = await import('pyodide')
-    const py = await loadPyodide({
-      indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/',
-    })
-    const capturePy = `
+const CDN_PYODIDE_VERSIONS = [
+  { label: 'local-node', useNodePackage: true },
+  { label: 'cdn-v0.26.3', indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.3/full/' },
+  { label: 'cdn-v0.25.1', indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.1/full/' },
+  { label: 'cdnjs-v0.26.3', indexURL: 'https://cdnjs.cloudflare.com/ajax/libs/pyodide/0.26.3/' },
+]
+
+const loadPyodideFromNodePackage = async () => {
+  try {
+    const mod = await import(/* @vite-ignore */ 'pyodide')
+    if (!mod?.loadPyodide) throw new Error('node_modules pyodide has no loadPyodide export')
+    const py = await mod.loadPyodide()
+    return { py, source: 'local-node' }
+  } catch (e) {
+    throw new Error(`node_modules pyodide import failed: ${e.message || String(e)}`)
+  }
+}
+
+const loadPyodideFromCDN = async ({ indexURL }) => {
+  let mod
+  try {
+    mod = await import(/* @vite-ignore */ indexURL + 'pyodide.mjs')
+  } catch (e) {
+    try {
+      mod = await import(/* @vite-ignore */ indexURL + 'pyodide.asm.mjs')
+    } catch (err2) {
+      throw new Error(`CDN pyodide fetch failed (tried pyodide.mjs + pyodide.asm.mjs at ${indexURL}): ${e.message || String(e)}`)
+    }
+  }
+  if (!mod?.loadPyodide) throw new Error(`pyodide module at ${indexURL} has no loadPyodide export`)
+  const py = await mod.loadPyodide({ indexURL })
+  return { py, source: 'CDN ' + indexURL }
+}
+
+const loadPyodideFromGlobal = async () => {
+  if (globalThis.loadPyodide) {
+    const py = await globalThis.loadPyodide()
+    return { py, source: 'globalThis script tag' }
+  }
+  throw new Error('loadPyodide not on globalThis')
+}
+
+const installCaptureSetup = async (py) => {
+  const capturePy = `
 import sys
 import io
 _${captureStdoutKey}_stdout = io.StringIO()
@@ -25,9 +60,42 @@ _${captureStdoutKey}_stderr = io.StringIO()
 sys.stdout = _${captureStdoutKey}_stdout
 sys.stderr = _${captureStdoutKey}_stderr
 `
-    await py.runPythonAsync(capturePy)
-    globalThis.__vl_pyodide = py
-    pyodideLoaded = true
+  await py.runPythonAsync(capturePy)
+}
+
+const ensurePyodide = async () => {
+  if (pyodideLoaded) return
+  if (pyodideLoadingPromise) return pyodideLoadingPromise
+  pyodideLoadingPromise = (async () => {
+    const errors = []
+    for (const candidate of CDN_PYODIDE_VERSIONS) {
+      try {
+        const { py, source } = candidate.useNodePackage
+          ? await loadPyodideFromNodePackage()
+          : await loadPyodideFromCDN({ indexURL: candidate.indexURL })
+        await installCaptureSetup(py)
+        globalThis.__vl_pyodide = py
+        globalThis.__vl_pyodide_source = source
+        pyodideLoaded = true
+        return
+      } catch (err) {
+        errors.push(`[${candidate.label}] ${err.message || String(err)}`)
+      }
+    }
+    try {
+      const { py, source } = await loadPyodideFromGlobal()
+      await installCaptureSetup(py)
+      globalThis.__vl_pyodide = py
+      globalThis.__vl_pyodide_source = source
+      pyodideLoaded = true
+      return
+    } catch (err) {
+      errors.push(`[globalThis] ${err.message || String(err)}`)
+    }
+    pyodideLoadingPromise = null
+    throw new Error(
+      'Python runtime failed to load from all sources. Tried:\n- ' + errors.join('\n- ')
+    )
   })()
   return pyodideLoadingPromise
 }

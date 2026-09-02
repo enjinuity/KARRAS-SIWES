@@ -137,6 +137,7 @@ html, body, #root {
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
   -webkit-appearance: none;
+  appearance: none;
 }
 
 .input:focus, .textarea:focus, .select:focus {
@@ -896,13 +897,488 @@ input[type="datetime-local"] {
 }
 .expected-output { margin-top: 14px; }
 
-/* touch-first tweaks for editor on mobile */
+/* ===== MOBILE FIRST (phone first) VL overrides =====
+   Everything below this is designed with ≤430px phones as primary target.
+   Desktop rules at >=900px widen things back. */
+
+* { -webkit-tap-highlight-color: rgba(255, 255, 255, 0.06); }
+
+html, body, #root {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  overscroll-behavior-y: contain;
+}
+
+#root { padding-bottom: env(safe-area-inset-bottom, 0); }
+
+.app {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.page {
+  max-width: 100%;
+  padding: 12px 12px 120px;
+}
+
+@media (min-width: 768px) {
+  .page { padding: 28px 20px 60px; max-width: 920px; }
+}
+
+.topbar {
+  padding: 12px 12px 10px;
+  align-items: flex-start;
+  gap: 8px;
+  flex-direction: column;
+}
+.topbar > div:first-child { width: 100%; }
+.topbar > div:nth-child(2) { width: 100%; justify-content: flex-start; }
+@media (min-width: 700px) {
+  .topbar {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 16px 16px;
+  }
+  .topbar > div:first-child { width: auto; }
+  .topbar > div:nth-child(2) { width: auto; justify-content: flex-end; margin-left: auto; }
+}
+
+.topbar .back-link { min-height: 44px; min-width: 44px; justify-content: center; }
+
+.karras-chip {
+  min-height: 44px;
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  gap: 10px;
+}
+
+.back-link {
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 0.85rem;
+}
+
+.card { padding: 14px 14px 16px; border-radius: 20px; }
+@media (min-width: 700px) {
+  .card { padding: 18px; border-radius: 22px; }
+}
+
+.card h2 { font-size: 1.05rem; }
+.card h3 { font-size: 0.98rem; }
+
+.label {
+  font-size: 0.72rem;
+  margin-bottom: 6px;
+}
+
+.input, .textarea, .select {
+  padding: 13px 14px;
+  min-height: 48px;
+  font-size: 16px; /* Prevent iOS zoom on focus */
+  border-radius: 14px;
+}
+
+.textarea { min-height: 120px; padding-top: 12px; padding-bottom: 12px; line-height: 1.6; }
+
+input[type="datetime-local"],
+input[type="date"],
+input[type="number"] {
+  min-height: 48px;
+  padding: 12px 14px;
+  font-size: 16px;
+}
+
+.field { margin-bottom: 14px; }
+
+.btn {
+  padding: 0 18px;
+  min-height: 50px;
+  font-size: 0.95rem;
+  border-radius: 999px;
+  letter-spacing: 0.01em;
+}
+.btn:active { transform: none; }
+.btn-sm {
+  min-height: 44px;
+  padding: 0 16px;
+  font-size: 0.88rem;
+}
+.btn-ghost.btn-sm {
+  min-height: 42px;
+  padding: 0 14px;
+}
+
+.error, .success {
+  padding: 12px 12px;
+  font-size: 0.92rem;
+  border-radius: 14px;
+  line-height: 1.5;
+}
+
+.badge {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 11px;
+  font-size: 0.74rem;
+}
+
+.list-item {
+  padding: 14px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+.list-item-title { font-size: 1.02rem; }
+.list-item-meta {
+  gap: 8px 10px;
+  row-gap: 6px;
+  font-size: 0.8rem;
+}
+
+.editor-wrap { border-radius: 16px; overflow: hidden; margin-bottom: 14px; }
+.editor-wrap .cm-editor {
+  height: auto;
+  min-height: 260px;
+  max-height: 58vh;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.editor-wrap .cm-content { padding: 12px 10px !important; }
+.editor-wrap .cm-gutters { padding: 0 4px !important; font-size: 12px; }
+.editor-wrap .cm-lineNumbers .cm-gutterElement {
+  min-width: 30px !important;
+  padding: 0 4px !important;
+  font-size: 12px !important;
+}
+@media (min-width: 900px) {
+  .editor-wrap .cm-editor {
+    min-height: 340px;
+    max-height: 64vh;
+    font-size: 14px;
+  }
+}
+
+.grade-banner { padding: 14px 14px 16px; border-radius: 18px; }
+.grade-banner .grade-value { font-size: 1.85rem; }
+
+.empty { padding: 24px 16px; border-radius: 18px; }
+
+.code-block {
+  padding: 12px 12px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  border-radius: 14px;
+  max-height: 60vh;
+}
+
+.run-output { padding: 10px 10px 2px; border-radius: 14px; }
+
+.login-wrap { padding: 12px 10px; min-height: 100vh; min-height: 100dvh; }
+.login-wrap .page { padding: 8px 0 60px; max-width: 520px; }
+.brand-mark { width: 60px; height: 60px; border-radius: 18px; }
+.brand h1 { font-size: 1.3rem; letter-spacing: 0.22em; }
+.brand h2 { font-size: 0.9rem; letter-spacing: 0.14em; }
+
+/* Tabs mobile: full-width chips */
+.tabs {
+  padding: 5px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+  gap: 5px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+.tab {
+  padding: 8px 16px;
+  min-height: 42px;
+  font-size: 0.86rem;
+  border-radius: 999px;
+  flex: 1 1 auto;
+  white-space: nowrap;
+}
+.tab.sm { padding: 6px 14px; min-height: 38px; font-size: 0.82rem; }
+@media (min-width: 700px) {
+  .tab { flex: 0 0 auto; padding: 8px 18px; }
+}
+
+.modal-backdrop {
+  padding: 10px 8px 30px;
+  align-items: flex-start;
+  padding-top: max(10px, env(safe-area-inset-top, 10px));
+}
+.modal {
+  border-radius: 20px;
+  padding: 16px;
+  max-height: calc(100dvh - 20px);
+  margin-top: 0;
+}
+.modal h2 { font-size: 1.05rem; }
+
+.stat-grid {
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 600px) {
+  .stat-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+}
+.stat-card {
+  padding: 12px 12px 14px;
+  border-radius: 16px;
+}
+.stat-label { font-size: 0.7rem; letter-spacing: 0.06em; }
+.stat-value { font-size: 1.35rem; margin-top: 2px; }
+
+.manual-card {
+  padding: 14px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+.manual-card .btn-sm {
+  min-width: 88px;
+}
+
+.task-editor-card {
+  padding: 12px;
+  border-radius: 16px;
+  margin-bottom: 12px;
+}
+.task-order-pill { width: 34px; height: 34px; font-size: 0.86rem; }
+
+.pdf-viewer-card {
+  padding: 12px;
+  border-radius: 16px;
+}
+
+/* Results tables (old): make stacked rows tall on phone */
+@media (max-width: 560px) {
+  .results-table tbody tr { padding: 10px 4px; }
+  .results-table td {
+    padding: 5px 2px !important;
+    font-size: 0.9rem;
+  }
+}
+
+/* New .table grading grids: on phone render as cards too */
+.table-wrap {
+  border-radius: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.table {
+  min-width: 720px;
+  font-size: 0.88rem;
+}
+.table th, .table td {
+  padding: 10px 10px;
+  white-space: nowrap;
+  min-width: 76px;
+}
+.table th {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  font-size: 0.7rem;
+}
+/* First 3 identity columns sticky to left on scroll */
+.table th:nth-child(1),
+.table td:nth-child(1),
+.table th:nth-child(2),
+.table td:nth-child(2),
+.table th:nth-child(3),
+.table td:nth-child(3),
+.table th:nth-child(4),
+.table td:nth-child(4),
+.table th:nth-child(5),
+.table td:nth-child(5) {
+  position: sticky;
+  z-index: 2;
+  background: #060606;
+}
+.table tr:hover td { background: inherit; }
+/* sticky cols: identity cells only */
+.table th:nth-child(1), .table td:nth-child(1) { left: 0; }
+.table th:nth-child(2), .table td:nth-child(2) { left: 140px; }
+.table th:nth-child(3), .table td:nth-child(3) { left: 220px; }
+.table th:nth-child(4), .table td:nth-child(4) { left: 340px; }
+.table th:nth-child(5), .table td:nth-child(5) { left: 500px; }
+
+.grade-input {
+  min-height: 40px;
+  min-width: 80px;
+  padding: 8px 10px;
+  font-size: 15px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #030303;
+  color: var(--text);
+  font-family: inherit;
+}
+.grade-input:focus {
+  border-color: rgba(255,255,255,0.35);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+.grade-input:disabled { opacity: 0.6; }
+
+/* ==== Workspace (student manual): mobile first TABS then pane stacks ==== */
+.workspace-root {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.workspace-topbar {
+  padding: 12px 12px 10px;
+  gap: 8px;
+  position: sticky; top: 0; z-index: 20;
+  background: #020202;
+}
+.workspace-progress-bar {
+  padding: 10px 12px 12px;
+}
+.workspace-body {
+  grid-template-columns: 1fr;
+  max-width: 100%;
+}
+@media (min-width: 960px) {
+  .workspace-body {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr);
+    height: calc(100dvh - 136px);
+  }
+}
+
+/* Mobile pane tabs: on phone, use big pill tabs top of page for PDF vs Task */
+@media (max-width: 959px) {
+  .workspace-pane {
+    display: none;
+    width: 100%;
+  }
+  .workspace-pane.pane-active {
+    display: block;
+    padding-bottom: 12px;
+  }
+}
+.workspace-pane.pane-manual .pane-header {
+  padding: 12px 12px;
+}
+.pane-header {
+  padding: 12px 12px;
+}
+.pane-header h2 { font-size: 1rem; }
+.pane-header-actions {
+  margin-top: 8px;
+  gap: 6px;
+}
+
+.task-section-chip {
+  min-height: 36px;
+  padding: 4px 12px;
+  font-size: 0.8rem;
+  gap: 6px;
+}
+
+.pane-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 8px 10px 0;
+  border-bottom: 1px solid var(--border);
+  background: #040404;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+.pane-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex: 1 1 auto;
+}
+.pane-tab-active {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.pdf-frame {
+  height: calc(100dvh - 260px);
+  min-height: 380px;
+}
+
+.task-stepper {
+  padding: 10px 12px;
+  gap: 6px;
+  -webkit-overflow-scrolling: touch;
+}
+.stepper-dot {
+  min-width: 38px;
+  height: 38px;
+  font-size: 0.86rem;
+  flex-shrink: 0;
+}
+
+.task-card {
+  padding: 12px;
+}
+@media (min-width: 960px) {
+  .task-card { padding: 20px; max-width: 860px; }
+}
+
+.course-chip {
+  min-height: 30px;
+  padding: 3px 11px;
+  font-size: 0.8rem;
+}
+
+.progress-bar {
+  height: 10px;
+}
+
 @media (max-width: 600px) {
-  .task-card { padding: 12px; }
+  .task-card { padding: 12px 10px; }
   .tabs { padding: 4px; }
-  .tab { padding: 6px 12px; font-size: 0.85rem; }
-  .topbar { padding: 14px 14px 12px; }
+  .topbar { padding: 12px 12px 10px; }
   .topbar h1 { font-size: 1.05rem; }
   .workspace-topbar h1 { font-size: 1.05rem; }
+  .modal-backdrop { padding: 8px 6px 24px; }
+  .modal { padding: 14px; }
+}
+
+/* Desktop refinement: restore larger sizes back (progressive enhancement) */
+@media (min-width: 960px) {
+  .page { max-width: 1160px; padding: 28px 24px 60px; }
+  .topbar { max-width: 1160px; }
+  .card { padding: 20px 22px 22px; border-radius: 22px; }
+  .input, .textarea, .select { min-height: 46px; border-radius: 14px; }
+  .btn { min-height: 48px; }
+  .brand-mark { width: 68px; height: 68px; }
+  .brand h1 { font-size: 1.55rem; letter-spacing: 0.28em; }
+  .brand h2 { font-size: 1rem; letter-spacing: 0.18em; }
+  .editor-wrap .cm-editor {
+    min-height: 400px;
+    max-height: 70vh;
+    font-size: 14px;
+  }
+  .grade-banner .grade-value { font-size: 2.1rem; }
+  .stat-value { font-size: 1.45rem; }
+  .workspace-topbar { padding: 16px 16px 14px; }
+  .workspace-progress-bar { padding: 10px 16px 12px; }
+  .pane-header { padding: 14px 16px; }
+  .task-section-chip { min-height: 38px; padding: 4px 14px; font-size: 0.86rem; }
+  .stepper-dot { min-width: 40px; height: 40px; }
+  .pdf-frame { height: calc(100dvh - 240px); }
 }
 

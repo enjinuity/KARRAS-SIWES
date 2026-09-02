@@ -72,3 +72,42 @@ export const buildManualGradeCsv = ({ manual, tasks, rows }) => {
   })
   return { header, data, rows: [header, ...data] }
 }
+
+export const buildAssignmentGradeCsv = ({ assignment, rows }) => {
+  const header = [
+    'Matric No.',
+    'Level',
+    'Faculty',
+    'Department',
+    'Student Email',
+    'Student Name',
+    'Student ID (UUID)',
+    'Auto Passed',
+    'Submission Status',
+    'Submitted At',
+    'Grade Earned',
+    'Total Possible',
+    'Score %',
+  ]
+  const totalPossible = 100
+  const data = rows.map((r) => {
+    const earned = typeof r.grade === 'number' ? r.grade : 0
+    const pct = totalPossible ? Number(((earned / totalPossible) * 100).toFixed(2)) : 0
+    return [
+      r.matricNo || '',
+      r.level || '',
+      r.faculty || '',
+      r.department || '',
+      r.email || '',
+      r.fullName || '',
+      r.studentId || '',
+      r.autoPassed === true ? 'Yes' : r.autoPassed === false ? 'No' : '',
+      r.statusLabel || r.status || '',
+      r.submittedAt || '',
+      typeof r.grade === 'number' ? r.grade : '',
+      totalPossible,
+      pct,
+    ]
+  })
+  return { header, data, rows: [header, ...data] }
+}

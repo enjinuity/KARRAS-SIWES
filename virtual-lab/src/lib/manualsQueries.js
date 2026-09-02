@@ -168,11 +168,25 @@ export const listManualsForStudent = async (studentId) => {
 }
 
 export const enrollInManual = async (manualId, studentId) => {
-  const { error } = await supabase
+  if (!manualId || !studentId) throw new Error('Enroll requires both manual and student id')
+  const exists = await supabase
+    .from('manual_enrollments')
+    .select('id')
+    .eq('manual_id', manualId)
+    .eq('student_id', studentId)
+    .maybeSingle()
+  if (exists?.data) return exists.data
+  const { data, error } = await supabase
     .from('manual_enrollments')
     .insert({ manual_id: manualId, student_id: studentId })
-    .onConflict(['manual_id', 'student_id']).ignore()
-  if (error) throw error
+    .select()
+    .maybeSingle()
+  if (error) {
+    const msg = String(error.message || error)
+    if (/duplicate|unique|violation/i.test(msg)) return null
+    throw error
+  }
+  return data
 }
 
 export const getManualForStudentWorkspace = async (manualId) => {

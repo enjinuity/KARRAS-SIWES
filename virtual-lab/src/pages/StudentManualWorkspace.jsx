@@ -263,12 +263,55 @@ export default function StudentManualWorkspace() {
           </div>
           {pdfUrl ? (
             <iframe
+              key={pdfUrl}
               className="pdf-frame"
               title="Manual PDF"
               src={pdfUrl}
+              referrerPolicy="no-referrer"
+              loading="eager"
             />
           ) : (
-            <div className="empty" style={{ margin: 12 }}>Instructor has not uploaded a PDF yet. Tasks are still solvable below.</div>
+            <div className="pdf-viewer-card" style={{ margin: 12, padding: 18 }}>
+              <div className="row" style={{ alignItems: 'flex-start', marginBottom: 10 }}>
+                <div>
+                  <h2 className="mb-0" style={{ fontSize: '1.05rem' }}>📖 Printed lab manual (page view)</h2>
+                  <div className="small muted" style={{ marginTop: 4 }}>
+                    Lecturer hasn&apos;t uploaded a PDF yet. This pane mirrors the layout of your printed manual so you can follow along with your physical copy or department handout.
+                  </div>
+                </div>
+                {task && (task.pdf_page_start || task.pdf_section_label) && (
+                  <span className="task-section-chip" style={{ marginLeft: 'auto', flexShrink: 0 }}>
+                    📚 {task.pdf_section_label || 'Task section'}
+                    {(task.pdf_page_start || task.pdf_page_end) && (
+                      <span className="muted small" style={{ marginLeft: 6 }}>
+                        pp. {task.pdf_page_start ?? '?'}–{task.pdf_page_end ?? task.pdf_page_start ?? '?'}
+                      </span>
+                    )}
+                  </span>
+                )}
+              </div>
+              {task && (
+                <div style={{ marginTop: 10 }}>
+                  <div className="small muted">Task reference:</div>
+                  <h3 style={{ fontFamily: 'var(--font-display)', margin: '6px 0 8px', fontSize: '1rem' }}>
+                    {String(task.order_index).padStart(2, '0')}. {task.title}
+                  </h3>
+                  {task.instruction_text && (
+                    <p className="small" style={{ whiteSpace: 'pre-wrap', color: '#d4d4d8' }}>
+                      {task.instruction_text.length > 340 ? task.instruction_text.slice(0, 340) + '…' : task.instruction_text}
+                    </p>
+                  )}
+                  <div style={{ marginTop: 12 }} className="small muted">
+                    Open your manual {task.pdf_section_label ? `(${task.pdf_section_label}) ` : ' '}
+                    on page <strong style={{ color: 'var(--text)' }}>{task.pdf_page_start ?? '—'}</strong>
+                    {task.pdf_page_end ? `–${task.pdf_page_end}` : ''}. Read the examples, diagrams, and edge cases there first — then attempt the task on the right pane.
+                  </div>
+                </div>
+              )}
+              <div className="small muted" style={{ marginTop: 14 }}>
+                For actual PDF upload: Lecturer dashboard → Open manual → Settings tab → Upload/replace manual PDF.
+              </div>
+            </div>
           )}
         </div>
 
